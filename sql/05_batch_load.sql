@@ -1,6 +1,6 @@
 -- Load a run_batch job's Parquet output into DECIDER_ANSWERS, in the same RESULT shape the
--- service function returns, so DECIDER_DECISIONS, the cascade and the scoring script read
--- it unchanged. The job writes the input columns next to the outputs, so ITEM_ID comes back.
+-- service function returns, so DECIDER_DECISIONS and the SQL reports read it unchanged.
+-- The job writes the input columns next to the outputs, so ITEM_ID comes back.
 -- $SNOW -f sql/05_batch_load.sql -D "job=DECIDER_BATCH" -D "run_id=batch"
 USE SCHEMA <% database %>.<% schema %>;
 USE WAREHOUSE <% analysis_warehouse %>;

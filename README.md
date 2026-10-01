@@ -2,7 +2,7 @@
 
 Code for the Snowflake Developers Blog post "Decisions Are All You Need: Run Open-Weight Decision Models on Snowflake" (link to come).
 
-It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a service called from SQL. A second service run sends the rows decider-2b is least sure of to `AI_CLASSIFY`, and a sweep replays that cascade at every confidence threshold up to 0.9. Throughput comes from query history and cost from Snowflake's metering views.
+It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a service called from SQL. Throughput comes from query history and cost from Snowflake's metering views.
 
 decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBench isn't affiliated with TypeSafe AI. Nothing here is a JevBench Score or a leaderboard entry.
 
@@ -10,16 +10,15 @@ decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBenc
 
 The GPU pool bills for every minute its node is up, including the five minutes before auto-suspend. Run `sql/99_teardown.sql` when you're done.
 
-At Standard edition list prices in AWS US West (Oregon), the batch job's GPU time while scoring the 231 decisions is $0.0057, or $0.025 per 1,000 decisions. Each job also holds the node for about 6 minutes to start, load and warm up the model and write its output (about $0.11), and the first job builds the image (about 7 minutes, $0.13). The service benchmark (setup, image build, both runs) came to $0.72, and the threshold sweep's extra `AI_CLASSIFY` calls to $0.21. Storing a model version (3.78 GB) is about $0.09 a month.
+At Standard edition list prices in AWS US West (Oregon), the batch job's GPU time while scoring the 231 decisions is $0.0057, or $0.025 per 1,000 decisions. Each job also holds the node for about 6 minutes to start, load and warm up the model and write its output (about $0.11), and the first job builds the image (about 7 minutes, $0.13). The service path builds its image on a CPU pool (about $0.05), and its GPU node bills for every hour it stays up, busy or not: 0.57 credits, or $1.14, an hour. Storing a model version (3.78 GB) is about $0.09 a month.
 
 ## Requirements
 
 - Python 3.12 and the [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index) with a connection configured.
-- A region with GPU_NV_S compute pools and `AI_CLASSIFY`.
+- A region with GPU_NV_S compute pools.
 - A role that can:
   - create a database, a warehouse and a compute pool (`CREATE DATABASE`, `CREATE WAREHOUSE`, `CREATE COMPUTE POOL` on the account), and for the service path an external access integration (`CREATE INTEGRATION`);
   - create an image repository, a model and services (batch jobs are services) in the schema, and for the service path a network rule;
-  - call Cortex AI functions (the `SNOWFLAKE.CORTEX_USER` database role);
   - read `SNOWFLAKE.ACCOUNT_USAGE` for the cost queries.
 
   The scripts don't set a role; they use your connection's default.
@@ -35,10 +34,9 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | `python/decider_model_batched.py`, `python/replay_batch_plans.py` | The batched serving path I also tried (slower on these items), and an offline replay of its batch plans |
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
 | `python/smoke_test_local.py` | Run the wrapper in-process on six items and check JevBench parses the output, before any GPU starts |
-| `python/score_with_jevbench.py`, `python/threshold_sweep.py` | Score stored answers with JevBench's harness at commit `bb05a335` |
-| `python/plot_threshold_sweep.py` | Draw the sweep chart from `runs/sweep/report.json`, or `results/sweep_report.json` if you haven't run the sweep |
+| `python/score_with_jevbench.py` | Score the service run's stored answers with JevBench's harness at commit `bb05a335` |
 | `python/bench_config.py` | Database and schema for the Python scripts |
-| `sql/00`–`10` | Setup, prices, the GPU pool (`02_compute`), the service's build pool and egress (`02_service_build`), views, loading a batch job's output (`05_batch_load`), the service runs, the cascade, throughput, cost and the sweep |
+| `sql/00`–`09` | Setup, prices, the GPU pool (`02_compute`), the service's build pool and egress (`02_service_build`), views, the service pre-flight, loading a batch job's output (`05_batch_load`), the service run, throughput and cost |
 | `sql/99_teardown.sql` | Drop the pools, warehouse, service and integration |
 | `results/` | The scored outputs behind the post |
 
@@ -82,7 +80,7 @@ $SNOW -f sql/99_teardown.sql
 
 `bench_batch.py` scores the job's answers itself and writes them to `runs/batch/`. `05_batch_load.sql` puts them in `DECIDER_ANSWERS`, where the views and the SQL reports read them.
 
-The service path, which the cascade scripts use as written (`07_cascade.sql` calls the service for its decider pass):
+The service path:
 
 ```sh
 $SNOW -f sql/02_service_build.sql
@@ -91,21 +89,12 @@ $SNOW -f sql/02_service_build.sql
 $SNOW -f sql/03_views.sql
 $SNOW -f sql/04_preflight.sql
 $SNOW -f sql/05_service_decider_only.sql
-$SNOW -f sql/06_token_precount.sql
-$SNOW -f sql/07_cascade.sql
 .venv/bin/python python/score_with_jevbench.py
+$SNOW -f sql/08_report_throughput.sql
 $SNOW -f sql/99_teardown.sql
 ```
 
-`sql/08_report_throughput.sql` reads `INFORMATION_SCHEMA` and works right away. `sql/09_cost_accounting.sql` reads `ACCOUNT_USAGE`, which lags by up to a few hours, and works after teardown.
-
-For the threshold sweep, after the cascade:
-
-```sh
-$SNOW -f sql/10_threshold_sweep.sql
-.venv/bin/python python/threshold_sweep.py
-uv run --no-project --with matplotlib==3.10.1 python python/plot_threshold_sweep.py sweep.png
-```
+`sql/08_report_throughput.sql` reads `INFORMATION_SCHEMA`, so run it before teardown. `sql/09_cost_accounting.sql` reads `ACCOUNT_USAGE`, which lags by up to a few hours, and works after teardown.
 
 ## Third-party code and data
 
