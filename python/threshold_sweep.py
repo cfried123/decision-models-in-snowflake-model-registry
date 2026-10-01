@@ -1,7 +1,7 @@
 """Threshold sweep for the decider-2b -> AI_CLASSIFY cascade, scored with JevBench's harness.
 
 Run after sql/10_threshold_sweep.sql. Every row with confidence below 0.9 has an AI_CLASSIFY
-label (Run 2's for the 58 rows it escalated, the sweep's for the rest), so any threshold up to
+label (the cascade's for the 58 rows it escalated, the sweep's for the rest), so any threshold up to
 0.9 can be replayed without new calls. Confidence is decider's `confidence` for Choice and
 Score and |2 * P(yes) - 1| for Noul. This is an after-the-fact analysis, not pre-registered;
 the cross-validation at the end estimates how much of the best in-sample gain survives when
@@ -32,9 +32,9 @@ def fetch(session):
     dec = q("""SELECT d.ITEM_ID, d.RESULT:ANSWER_JSON::STRING AS A, v.ESCALATE,
                       IFF(v.QTYPE = 'noul', ABS(2 * v.ANSWER:noul::FLOAT - 1), v.ANSWER:confidence::FLOAT) AS CONF
                FROM DECIDER_ANSWERS d JOIN DECIDER_DECISIONS v ON v.RUN_ID = d.RUN_ID AND v.ITEM_ID = d.ITEM_ID
-               WHERE d.RUN_ID = 'run1'""")
+               WHERE d.RUN_ID = 'service'""")
     ai = q("""SELECT RUN_ID, ITEM_ID, RESULT:labels[0]::STRING AS LABEL FROM AI_CLASSIFY_ANSWERS
-              WHERE RUN_ID IN ('run2', 'sweep') AND RESULT:labels[0] IS NOT NULL""")
+              WHERE RUN_ID IN ('cascade', 'sweep') AND RESULT:labels[0] IS NOT NULL""")
     tokens = q("SELECT ITEM_ID, TOKENS FROM TOKEN_PRECOUNT")
     return items, dec, ai, tokens
 

@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.ticker import FormatStrFormatter  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-AI_CREDITS_PER_TOKEN = 1.39 / 1e6   # Run 2's metered AI_CLASSIFY rate
+AI_CREDITS_PER_TOKEN = 1.39 / 1e6   # the cascade's metered AI_CLASSIFY rate
 USD_PER_AI_CREDIT = 2.00
 
 

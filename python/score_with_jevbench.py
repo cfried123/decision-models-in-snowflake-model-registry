@@ -1,8 +1,8 @@
-"""Score Run 1 and Run 2 with JevBench's own harness (bb05a335), unmodified.
+"""Score the service run and the cascade with JevBench's own harness (bb05a335), unmodified.
 
 Decider answers are replayed through jevbench.adapters.typesafe.TypeSafeAdapter,
 with only its HTTP call replaced by the stored service output. Escalated rows in
-Run 2 go through a label-only adapter, which JevBench scores with score_label
+the cascade go through a label-only adapter, which JevBench scores with score_label
 (accuracy only; no calibration metrics for those rows).
 
 Writes runs/<run>/{results.jsonl, summary.json, raw/, ledger.jsonl} and
@@ -39,8 +39,8 @@ class ReplayTypeSafe(ts.TypeSafeAdapter):
     cost_basis = "snowflake_metered_credits_reported_separately"
 
     def __init__(self, responses):
-        super().__init__(endpoint=f"snowflake://{FQ_SCHEMA}.DECIDER_2B_V11_SVC",
-                         model="decider-2b-v11", key_env="")
+        super().__init__(endpoint=f"snowflake://{FQ_SCHEMA}.DECIDER_2B_SVC",
+                         model="decider-2b", key_env="")
         self.responses = responses
 
     def run(self, task):
@@ -51,7 +51,7 @@ class ReplayTypeSafe(ts.TypeSafeAdapter):
 
 
 class CascadeAdapter:
-    """Run 2: AI_CLASSIFY's label where the row was escalated, decider's answer otherwise."""
+    """The cascade: AI_CLASSIFY's label where the row was escalated, decider's answer otherwise."""
     name = "decider_cascade_ai_classify"
     price_input_per_m = None
     price_output_per_m = None
@@ -80,9 +80,9 @@ def fetch(session):
     items = q("SELECT ITEM_ID, TIER, ITEM_JSON, N_OPTIONS, SURFACE_ANSWER FROM JEVBENCH_ITEMS")
     answers = defaultdict(dict)
     for r in q("SELECT RUN_ID, ITEM_ID, RESULT:ANSWER_JSON::STRING AS A FROM DECIDER_ANSWERS "
-               "WHERE RUN_ID IN ('run1', 'run2')"):
+               "WHERE RUN_ID IN ('service', 'cascade')"):
         answers[r["RUN_ID"]][r["ITEM_ID"]] = json.loads(r["A"]) if r["A"] else None
-    final = {r["ITEM_ID"]: r for r in q("SELECT * FROM RUN2_FINAL")}
+    final = {r["ITEM_ID"]: r for r in q("SELECT * FROM CASCADE_FINAL")}
     return items, answers, final
 
 
@@ -165,15 +165,15 @@ def main():
     tasks.sort(key=lambda t: (order[t.tier], t.id))
 
     report = {}
-    rec1, sum1 = run_harness("run1", ReplayTypeSafe(answers["run1"]), tasks)
+    rec1, sum1 = run_harness("service", ReplayTypeSafe(answers["service"]), tasks)
 
     ai_labels = {i: f["AI_LABEL"] for i, f in final.items() if f["ESCALATE"] and f["AI_LABEL"] is not None}
-    rec2, sum2 = run_harness("run2", CascadeAdapter(answers["run2"], ai_labels), tasks)
+    rec2, sum2 = run_harness("cascade", CascadeAdapter(answers["cascade"], ai_labels), tasks)
 
-    # Run 2's decider pass alone, to measure what the cascade changed.
-    rec2d, _ = run_harness("run2_decider_pass", ReplayTypeSafe(answers["run2"]), tasks)
+    # The cascade's decider pass alone, to measure what the cascade changed.
+    rec2d, _ = run_harness("cascade_decider_pass", ReplayTypeSafe(answers["cascade"]), tasks)
 
-    for name, recs, summ in (("run1", rec1, sum1), ("run2", rec2, sum2)):
+    for name, recs, summ in (("service", rec1, sum1), ("cascade", rec2, sum2)):
         report[name] = {
             "accuracy": summ["accuracy"], "n_correct": summ["n_correct"], "n_scorable": summ["n_scorable"],
             "schema_validity": summ["schema_validity"], "brier_mean": summ["brier_mean"], "ece": summ["ece"],
@@ -199,7 +199,7 @@ def main():
         elif not a and not b and r2d[i]["predicted"] != r2[i]["predicted"]:
             flips["wrong_to_wrong_changed"].append(i)
     distractor = [i for i in esc if surface.get(i) and r2[i]["predicted"] == surface[i]]
-    report["cascade"] = {
+    report["cascade_changes"] = {
         "escalated": len(esc), "ai_labels": len(ai_labels), "ai_null_fallback_to_decider": len(esc) - len(ai_labels),
         "escalated_by_tier": dict(sorted(defaultdict(int, {k: sum(1 for i in esc if tier_of[i] == k)
                                                            for k in ("easy", "standard", "hard")}).items())),
@@ -210,10 +210,10 @@ def main():
                                      "items": sorted(distractor)},
     }
     same = sum(r1[t.id]["predicted"] == r2d[t.id]["predicted"] for t in tasks)
-    report["determinism_run1_vs_run2_decider"] = {"same_predicted": same, "of": len(tasks)}
+    report["determinism_service_vs_cascade_decider"] = {"same_predicted": same, "of": len(tasks)}
     (RUNS / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True))
-    print(json.dumps({k: report[k] for k in ("cascade", "determinism_run1_vs_run2_decider")}, indent=1))
-    for name in ("run1", "run2"):
+    print(json.dumps({k: report[k] for k in ("cascade_changes", "determinism_service_vs_cascade_decider")}, indent=1))
+    for name in ("service", "cascade"):
         print(name, "accuracy", round(report[name]["accuracy"], 4), "by_tier",
               {k: f'{v["correct"]}/{v["n"]}' for k, v in report[name]["by_tier"].items()})
 

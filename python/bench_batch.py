@@ -6,7 +6,7 @@ No warehouse sits in the inference path: the job reads the input from Parquet on
 a stage and writes Parquet back. The warehouse only stages the input and reads
 the output, in separate statements.
 
-    SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/bench_batch.py V11 batch_v11 [max_batch_rows]
+    SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/bench_batch.py BATCH batch [max_batch_rows]
 
 Writes runs/batch_jobs/<run_id>/{job.json, job.log, answers.json} and the harness output in
 runs/<run_id>/.

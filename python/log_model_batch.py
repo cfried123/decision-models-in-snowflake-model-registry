@@ -1,17 +1,17 @@
 """Log the decider-2b versions for the batch-inference levers.
 
-  V11B  DeciderModel (V11's wrapper, unchanged), for run_batch
-  V12   DeciderBatchedModel, torch.compile off
-  V13   DeciderBatchedModel, torch.compile on
-  V12B  DeciderBatchedModel, torch.compile off, rows over 2,048 tokens run one per forward
+  BATCH              DeciderModel (the same wrapper as the service), for run_batch
+  BATCHED            DeciderBatchedModel, torch.compile off
+  BATCHED_COMPILE    DeciderBatchedModel, torch.compile on
+  BATCHED_SOLO_LONG  DeciderBatchedModel, torch.compile off, rows over 2,048 tokens run one per forward
 
 run_batch builds its image on a different base from create_service, and that base
-constrains click<8.3.0, which V11's exact huggingface-hub==1.33.0 can't meet. So the
-packages that set the model's numbers keep V11's exact pins (decider-ai, torch 2.10.x,
+constrains click<8.3.0, which the service version's exact huggingface-hub==1.33.0 can't meet. So the
+packages that set the model's numbers keep the service version's exact pins (decider-ai, torch 2.10.x,
 transformers, flash-linear-attention, fla-core, tokenizers) and the helper libraries get
 ranges the resolver can fit to that base. The three versions share one image.
 
-    SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/log_model_batch.py V12
+    SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/log_model_batch.py BATCH
 """
 import hashlib
 import json
@@ -47,12 +47,12 @@ PIP_REQUIREMENTS = [
 ]
 
 VERSIONS = {
-    "V11B": ("DeciderModel, V11's wrapper unchanged, for run_batch", DeciderModel, None),
-    "V12": ("DeciderBatchedModel: decider's batched server path, torch.compile off", DeciderBatchedModel,
+    "BATCH": ("DeciderModel, the same wrapper as the service, for run_batch", DeciderModel, None),
+    "BATCHED": ("DeciderBatchedModel: decider's batched server path, torch.compile off", DeciderBatchedModel,
             {"compile": False}),
-    "V13": ("DeciderBatchedModel: decider's batched server path, torch.compile on", DeciderBatchedModel,
+    "BATCHED_COMPILE": ("DeciderBatchedModel: decider's batched server path, torch.compile on", DeciderBatchedModel,
             {"compile": True}),
-    "V12B": ("DeciderBatchedModel: batched up to 2,048 tokens, longer rows one per forward, torch.compile off",
+    "BATCHED_SOLO_LONG": ("DeciderBatchedModel: batched up to 2,048 tokens, longer rows one per forward, torch.compile off",
              DeciderBatchedModel, {"compile": False, "batch_max_tokens": 2048}),
 }
 
@@ -84,7 +84,7 @@ def main(version):
         python_version="3.12",
         code_paths=[str(ROOT / "python" / "decider_model.py"), str(ROOT / "python" / "decider_model_batched.py")],
         options={"cuda_version": "12.8", "relax_version": False},
-        comment=f"decider-2b V11 weights (huggingface.co/Mapika/decider-2b@{REVISION[:7]}, Apache-2.0). {what}.",
+        comment=f"decider-2b weights (huggingface.co/Mapika/decider-2b@{REVISION[:7]}, Apache-2.0). {what}.",
     )
     print(f"logged {version} in {time.time() - t0:.0f}s", flush=True)
     session.close()

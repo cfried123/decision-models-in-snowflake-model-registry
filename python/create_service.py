@@ -1,7 +1,7 @@
-"""Deploy DECIDER_2B V11 as the SPCS service DECIDER_2B_V11_SVC (1x A10G, one instance).
+"""Deploy DECIDER_2B version SERVICE as the SPCS service DECIDER_2B_SVC (1x A10G, one instance).
 
 Runs in the background; poll with DESCRIBE SERVICE. SQL calls it as
-DECIDER_2B_V11_SVC!SYSTEM_ONE(STATE_JSON, QUESTIONS_JSON).
+DECIDER_2B_SVC!SYSTEM_ONE(STATE_JSON, QUESTIONS_JSON).
 
     SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/create_service.py
 """
@@ -21,11 +21,11 @@ def main():
     session = create_snowpark_session()
     session.use_schema(FQ_SCHEMA)
     reg = Registry(session=session, database_name=DATABASE, schema_name=SCHEMA)
-    mv = reg.get_model("DECIDER_2B").version("V11")
+    mv = reg.get_model("DECIDER_2B").version("SERVICE")
     t0 = time.time()
     print("creating service ...", flush=True)
     mv.create_service(
-        service_name="DECIDER_2B_V11_SVC",
+        service_name="DECIDER_2B_SVC",
         service_compute_pool="DECIDER_BENCH_GPU_POOL",
         image_build_compute_pool="DECIDER_BENCH_BUILD_POOL",
         image_repo=f"{FQ_SCHEMA}.DECIDER_BENCH_IMAGES",

@@ -1,7 +1,7 @@
 """Replay the batching plans offline: how many forwards and padded tokens each policy
 gives on the 231 JevBench items (tokenizer only, no model, no GPU).
 
-  v11       DeciderModel: one request at a time, Engine (v1) buckets up to 2,048, then
+  one_at_a_time  DeciderModel: one request at a time, Engine (v1) buckets up to 2,048, then
             multiples of 1,024 (score_shared for multi-row requests counted as its rows)
   v12       DeciderBatchedModel defaults: EngineV2 buckets up to 8,192, plan_batches
   v12_2048  EngineV2 with length buckets only up to 2,048: longer rows run eager,
@@ -22,7 +22,7 @@ from decider import systemone as S1  # noqa: E402
 from decider.batching import DEFAULT_MERGE_OVERHEAD_TOKENS, plan_batches  # noqa: E402
 from decider.prompt_fast import build_rows  # noqa: E402
 
-W = REPO / "models" / "decider-2b-v11"
+W = REPO / "models" / "decider-2b"
 SHARED_MIN = 768
 
 
@@ -71,7 +71,7 @@ def rows_of(tok):
     return reqs
 
 
-def v11(reqs):
+def one_at_a_time(reqs):
     fw, pad = 0, 0
     for lens in reqs:
         if len(lens) > 1:                         # score_shared: counted as one eager pass per row at exact length
@@ -106,8 +106,8 @@ def main():
     reqs = rows_of(tok)
     real = sum(sum(x) for x in reqs)
     print(f"{len(reqs)} requests, {sum(len(x) for x in reqs)} rows, {real} real tokens")
-    f, p = v11(reqs)
-    print(f"v11       forwards {f:4d}  padded tokens {p:7d}  ({p / real:.2f}x real)")
+    f, p = one_at_a_time(reqs)
+    print(f"one_at_a_time  forwards {f:4d}  padded tokens {p:7d}  ({p / real:.2f}x real)")
     for name, grid in (("v12", Grid(E2.T_BUCKETS)), ("v12_2048", Grid([t for t in E2.T_BUCKETS if t <= 2048]))):
         f, p, sh, detail = batched(reqs, grid)
         long_pad = sum(B * T for T, B in detail if T > 2048)

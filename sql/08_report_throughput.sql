@@ -1,5 +1,7 @@
 -- Throughput for the benchmark statements, from INFORMATION_SCHEMA (real time).
--- Run after both runs: $SNOW -f sql/08_report_throughput.sql
+-- Run after the service run and the cascade: $SNOW -f sql/08_report_throughput.sql
+-- Run it before teardown. Once DECIDER_BENCH_WH is dropped, INFORMATION_SCHEMA can't see its
+-- history, and this would replace BENCH_QUERY_TIMES with an empty table.
 USE SCHEMA <% database %>.<% schema %>;
 USE WAREHOUSE <% analysis_warehouse %>;
 
@@ -20,7 +22,7 @@ SELECT RUN_ID, STEP, N_ROWS, ROUND(ELAPSED_S, 1) AS ELAPSED_S, ROUND(QUEUED_S, 1
 FROM BENCH_QUERY_TIMES ORDER BY RUN_ID, START_TIME;
 
 SELECT RUN_ID, ROUND(SUM(ELAPSED_S), 1) AS TOTAL_S, ROUND(231 / SUM(ELAPSED_S), 2) AS DECISIONS_PER_S
-FROM BENCH_QUERY_TIMES WHERE RUN_ID IN ('run1', 'run2') GROUP BY RUN_ID ORDER BY RUN_ID;
+FROM BENCH_QUERY_TIMES WHERE RUN_ID IN ('service', 'cascade') GROUP BY RUN_ID ORDER BY RUN_ID;
 
 -- GPU time per decision inside the container, by tier.
 SELECT RUN_ID, TIER, COUNT(*) AS N,
@@ -28,5 +30,5 @@ SELECT RUN_ID, TIER, COUNT(*) AS N,
        ROUND(APPROX_PERCENTILE(ELAPSED_MS, 0.95)) AS P95_MS,
        ROUND(AVG(INPUT_TOKENS)) AS AVG_INPUT_TOKENS,
        ROUND(SUM(ELAPSED_MS) / 1000, 1) AS SUM_S
-FROM DECIDER_DECISIONS WHERE RUN_ID IN ('run1', 'run2')
+FROM DECIDER_DECISIONS WHERE RUN_ID IN ('service', 'cascade')
 GROUP BY RUN_ID, TIER ORDER BY RUN_ID, ARRAY_POSITION(TIER::VARIANT, ['easy', 'standard', 'hard']);

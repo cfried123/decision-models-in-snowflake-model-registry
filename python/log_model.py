@@ -1,4 +1,5 @@
-"""Log decider-2b V11 to the Snowflake Model Registry as <database>.<schema>.DECIDER_2B, version V11.
+"""Log decider-2b to the Snowflake Model Registry as <database>.<schema>.DECIDER_2B, version SERVICE
+(every package pinned exactly; the image for create_service).
 
 The weights folder (Mapika/decider-2b at revision 533964d, Apache-2.0) is stored
 as a model artifact, so the service never downloads from Hugging Face.
@@ -24,7 +25,7 @@ from decider_model import SIGNATURE, WEIGHTS, DeciderModel  # noqa: E402
 from bench_config import DATABASE, FQ_SCHEMA, SCHEMA  # noqa: E402
 from snowpark_session import create_snowpark_session  # noqa: E402
 
-WEIGHTS_DIR = ROOT / "models" / "decider-2b-v11"
+WEIGHTS_DIR = ROOT / "models" / "decider-2b"
 REVISION = "533964dae8be954c5b5e19fa4948e48408094c1e"
 WEIGHTS_SHA256 = "acaef2228b134dcdc20cad4ee79219482c927ec819aa3687b9b8a575c338817f"
 
@@ -64,14 +65,14 @@ def main():
     mv = reg.log_model(
         model,
         model_name="DECIDER_2B",
-        version_name="V11",
+        version_name="SERVICE",
         signatures={"system_one": SIGNATURE},
         pip_requirements=PIP_REQUIREMENTS,
         target_platforms=["SNOWPARK_CONTAINER_SERVICES"],
         python_version="3.12",
         code_paths=[str(ROOT / "python" / "decider_model.py")],
         options={"cuda_version": "12.8", "relax_version": False},
-        comment=(f"decider-2b V11 open weights (huggingface.co/Mapika/decider-2b@{REVISION[:7]}, "
+        comment=(f"decider-2b open weights (huggingface.co/Mapika/decider-2b@{REVISION[:7]}, "
                  "Apache-2.0), served with decider-ai 1.6.0. system_one takes the JevBench "
                  "/v1/systemone request and returns its response body."),
     )

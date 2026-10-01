@@ -2,7 +2,7 @@
 
 Code for the Snowflake Developers Blog post "Decisions Are All You Need: Run Open-Weight Decision Models on Snowflake" (link to come).
 
-It runs [decider-2b](https://huggingface.co/Mapika/decider-2b) V11, an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a service called from SQL. A second service run sends the rows decider-2b is least sure of to `AI_CLASSIFY`, and a sweep replays that cascade at every confidence threshold up to 0.9. Throughput comes from query history and cost from Snowflake's metering views.
+It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a service called from SQL. A second service run sends the rows decider-2b is least sure of to `AI_CLASSIFY`, and a sweep replays that cascade at every confidence threshold up to 0.9. Throughput comes from query history and cost from Snowflake's metering views.
 
 decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBench isn't affiliated with TypeSafe AI. Nothing here is a JevBench Score or a leaderboard entry.
 
@@ -29,9 +29,9 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | Path | What it does |
 |---|---|
 | `python/decider_model.py` | The Model Registry `CustomModel` wrapper: one `system_one` method that takes JevBench's request and returns decider's response |
-| `python/log_model_batch.py` | Register the weights for batch jobs as `V11B`: the same wrapper, with ranges for the helper libraries that the batch base image needs |
+| `python/log_model_batch.py` | Register the weights for batch jobs as version `BATCH`: the same wrapper, with ranges for the helper libraries that the batch base image needs |
 | `python/bench_batch.py` | Run a version over the 231 items with `run_batch` on the GPU pool, save the job's output and score it with JevBench's harness |
-| `python/log_model.py`, `python/create_service.py` | The service path: register `V11` with every package pinned, then build the image on a CPU pool and start the service |
+| `python/log_model.py`, `python/create_service.py` | The service path: register version `SERVICE` with every package pinned, then build the image on a CPU pool and start the service |
 | `python/decider_model_batched.py`, `python/replay_batch_plans.py` | The batched serving path I also tried (slower on these items), and an offline replay of its batch plans |
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
 | `python/smoke_test_local.py` | Run the wrapper in-process on six items and check JevBench parses the output, before any GPU starts |
@@ -62,7 +62,7 @@ curl -sL https://codeload.github.com/fstandhartinger/jevbench/tar.gz/bb05a335bc8
   | tar xz --strip-components=1 -C .cache/jevbench
 python3.12 -m venv .venv && .venv/bin/pip install -r python/requirements.txt
 .venv/bin/hf download Mapika/decider-2b --revision 533964dae8be954c5b5e19fa4948e48408094c1e \
-  --local-dir models/decider-2b-v11
+  --local-dir models/decider-2b
 ```
 
 Then run the batch job, in order:
@@ -73,16 +73,16 @@ $SNOW -f sql/01_price_assumptions.sql
 .venv/bin/python python/load_jevbench.py
 .venv/bin/python python/smoke_test_local.py
 $SNOW -f sql/02_compute.sql
-.venv/bin/python python/log_model_batch.py V11B
-.venv/bin/python python/bench_batch.py V11B batch_v11b 32   # about 13 minutes the first time, with the image build
+.venv/bin/python python/log_model_batch.py BATCH
+.venv/bin/python python/bench_batch.py BATCH batch 32   # about 13 minutes the first time, with the image build
 $SNOW -f sql/03_views.sql
-$SNOW -f sql/05_batch_load.sql -D job=DECIDER_BATCH_V11B -D run_id=batch
+$SNOW -f sql/05_batch_load.sql -D job=DECIDER_BATCH -D run_id=batch
 $SNOW -f sql/99_teardown.sql
 ```
 
-`bench_batch.py` scores the job's answers itself and writes them to `runs/batch_v11b/`. `05_batch_load.sql` puts them in `DECIDER_ANSWERS`, where the views and the SQL reports read them.
+`bench_batch.py` scores the job's answers itself and writes them to `runs/batch/`. `05_batch_load.sql` puts them in `DECIDER_ANSWERS`, where the views and the SQL reports read them.
 
-The service path, which the cascade scripts use as written (`07_run2_cascade.sql` calls the service for its decider pass):
+The service path, which the cascade scripts use as written (`07_cascade.sql` calls the service for its decider pass):
 
 ```sh
 $SNOW -f sql/02_service_build.sql
@@ -90,16 +90,16 @@ $SNOW -f sql/02_service_build.sql
 .venv/bin/python python/create_service.py      # about 15 minutes to a ready container
 $SNOW -f sql/03_views.sql
 $SNOW -f sql/04_preflight.sql
-$SNOW -f sql/05_run1_decider_only.sql
+$SNOW -f sql/05_service_decider_only.sql
 $SNOW -f sql/06_token_precount.sql
-$SNOW -f sql/07_run2_cascade.sql
+$SNOW -f sql/07_cascade.sql
 .venv/bin/python python/score_with_jevbench.py
 $SNOW -f sql/99_teardown.sql
 ```
 
 `sql/08_report_throughput.sql` reads `INFORMATION_SCHEMA` and works right away. `sql/09_cost_accounting.sql` reads `ACCOUNT_USAGE`, which lags by up to a few hours, and works after teardown.
 
-For the threshold sweep, after Run 2:
+For the threshold sweep, after the cascade:
 
 ```sh
 $SNOW -f sql/10_threshold_sweep.sql

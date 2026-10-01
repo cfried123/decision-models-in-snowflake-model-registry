@@ -5,8 +5,8 @@
 -- Per-run GPU and warehouse lines are statement wall time x list rate: the node and the
 -- warehouse are both reserved for the whole statement. QUERY_ATTRIBUTION_HISTORY is kept
 -- as a check only (last query below). On this single-session XS warehouse it spread the
--- metered credits unevenly: Run 1's 18 s statement got 0.0121 credits (about 44 s of XS
--- time) and Run 2's 17 s decider statement got none.
+-- metered credits unevenly: the service run's 18 s statement got 0.0121 credits (about 44 s of XS
+-- time) and the cascade's 17 s decider statement got none.
 -- $SNOW -f sql/09_cost_accounting.sql
 USE SCHEMA <% database %>.<% schema %>;
 USE WAREHOUSE <% analysis_warehouse %>;
@@ -18,7 +18,7 @@ SET wh_rate      = (SELECT VALUE FROM PRICE_ASSUMPTIONS WHERE ITEM = 'WH_XS_STAN
 SET bench_start  = (SELECT DATEADD(hour, -3, MIN(START_TIME)) FROM BENCH_QUERY_TIMES);
 
 CREATE OR REPLACE TABLE COST_LINES AS
-WITH stmt AS (SELECT * FROM BENCH_QUERY_TIMES WHERE RUN_ID IN ('run1', 'run2')),
+WITH stmt AS (SELECT * FROM BENCH_QUERY_TIMES WHERE RUN_ID IN ('service', 'cascade')),
 -- Per run: GPU node time while the run's service-function statement ran.
 gpu_run AS (
   SELECT RUN_ID, 'gpu_node' AS COMPONENT, SUM(ELAPSED_S) / 3600 * $gpu_rate AS CREDITS,
@@ -85,15 +85,15 @@ SELECT RUN_ID, COMPONENT, ROUND(CREDITS, 6) AS CREDITS, CREDIT_TYPE, ROUND(USD, 
 FROM COST_LINES ORDER BY RUN_ID, COMPONENT;
 
 SELECT COALESCE(RUN_ID, 'ALL-IN') AS RUN_ID, ROUND(SUM(USD), 4) AS USD,
-       IFF(RUN_ID IN ('run1', 'run2'), ROUND(SUM(USD) / 231 * 1000, 4), NULL) AS USD_PER_1000,
+       IFF(RUN_ID IN ('service', 'cascade'), ROUND(SUM(USD) / 231 * 1000, 4), NULL) AS USD_PER_1000,
        COUNT_IF(STATUS = 'PENDING') AS PENDING
 FROM COST_LINES GROUP BY ROLLUP (RUN_ID) ORDER BY RUN_ID NULLS LAST;
 
--- AI_CLASSIFY tokens billed in Run 2, and the effective rate.
+-- AI_CLASSIFY tokens billed in the cascade, and the effective rate.
 SELECT c.CREDITS, m.value:value::NUMBER AS TOKENS,
        ROUND(c.CREDITS / m.value:value::NUMBER * 1e6, 4) AS AI_CREDITS_PER_M_TOKENS
 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_AI_FUNCTIONS_USAGE_HISTORY c, LATERAL FLATTEN(INPUT => c.METRICS) m
-WHERE c.QUERY_ID IN (SELECT QUERY_ID FROM RUN_LOG WHERE RUN_ID = 'run2' AND STEP = 'ai_classify');
+WHERE c.QUERY_ID IN (SELECT QUERY_ID FROM RUN_LOG WHERE RUN_ID = 'cascade' AND STEP = 'ai_classify');
 
 -- Check: the warehouse's metered credits split into attributed and idle, beside each
 -- benchmark statement's attribution and its wall time at the XS rate.

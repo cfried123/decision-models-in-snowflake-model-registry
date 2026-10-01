@@ -29,7 +29,7 @@ from jevbench.scoring import score_task  # noqa: E402
 from jevbench.tasks import Task  # noqa: E402
 from snowflake.ml.model import custom_model  # noqa: E402
 
-WEIGHTS_DIR = ROOT / "models" / "decider-2b-v11"
+WEIGHTS_DIR = ROOT / "models" / "decider-2b"
 
 
 def pick_items(rows):
@@ -63,7 +63,7 @@ def main():
     assert list(out.columns) == ["ANSWER_JSON", "ELAPSED_MS", "INPUT_TOKENS", "RUNTIME_JSON"]
     assert str(out["ELAPSED_MS"].dtype) == "float64" and str(out["INPUT_TOKENS"].dtype) == "int64"
 
-    adapter = ts.TypeSafeAdapter(endpoint="snowflake-service", model="decider-2b-v11", key_env="")
+    adapter = ts.TypeSafeAdapter(endpoint="snowflake-service", model="decider-2b", key_env="")
     failures = 0
     for r, (_, o) in zip(items, out.iterrows()):
         task = Task.from_dict(json.loads(r["ITEM_JSON"]))
