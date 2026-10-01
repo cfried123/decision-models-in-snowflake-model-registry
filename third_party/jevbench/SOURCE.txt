@@ -1,0 +1,6 @@
+Source: https://github.com/fstandhartinger/jevbench
+Commit: bb05a335bc809e61b20c0f745d25499a82b326fc (2026-09-29)
+License: MIT (see LICENSE). Covers the harness and the public decisions used here:
+  datasets/public/easy.jsonl, datasets/public/original.jsonl, datasets/public/hard.jsonl
+  (every item carries provenance.license = "MIT").
+JevBench is Benchmark Heaven's benchmark and is not affiliated with or endorsed by TypeSafe AI.

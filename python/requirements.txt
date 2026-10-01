@@ -1,0 +1,8 @@
+# Local environment (Python 3.12, macOS arm64): data load, local smoke test,
+# model registration, scoring. The SPCS image gets its own pinned list in
+# log_model.py, resolved from the versions this file installs.
+snowflake-ml-python==2.3.0
+decider-ai==1.6.0
+torch==2.10.0          # the SPCS image uses 2.10.x too (last torch line on the CUDA 12.8 runtime)
+numba
+tomli
