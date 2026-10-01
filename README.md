@@ -2,23 +2,23 @@
 
 Code for the Snowflake Developers Blog post "Decisions Are All You Need: Run Open-Weight Decision Models on Snowflake" (link to come).
 
-It serves [decider-2b](https://huggingface.co/Mapika/decider-2b) V11, an open-weight decision model, from the Snowflake Model Registry on Snowpark Container Services (one NVIDIA A10G), calls it from SQL, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. A second run sends the rows decider-2b is least sure of to `AI_CLASSIFY`, and a sweep replays that cascade at every confidence threshold up to 0.9. Throughput comes from query history and cost from Snowflake's metering views.
+It runs [decider-2b](https://huggingface.co/Mapika/decider-2b) V11, an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a service called from SQL. A second service run sends the rows decider-2b is least sure of to `AI_CLASSIFY`, and a sweep replays that cascade at every confidence threshold up to 0.9. Throughput comes from query history and cost from Snowflake's metering views.
 
 decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBench isn't affiliated with TypeSafe AI. Nothing here is a JevBench Score or a leaderboard entry.
 
 ## What it costs
 
-The GPU pool bills for every minute its node is up, whether or not a query is running. Run `sql/99_teardown.sql` when you're done.
+The GPU pool bills for every minute its node is up, including the five minutes before auto-suspend. Run `sql/99_teardown.sql` when you're done.
 
-At Standard edition list prices in AWS US West (Oregon), the whole benchmark (setup, image build, both runs) came to $0.72, and the threshold sweep's extra `AI_CLASSIFY` calls to $0.21. Storing the model version (3.78 GB) is about $0.09 a month.
+At Standard edition list prices in AWS US West (Oregon), the batch job's GPU time while scoring the 231 decisions is $0.0057, or $0.025 per 1,000 decisions. Each job also holds the node for about 6 minutes to start, load and warm up the model and write its output (about $0.11), and the first job builds the image (about 7 minutes, $0.13). The service benchmark (setup, image build, both runs) came to $0.72, and the threshold sweep's extra `AI_CLASSIFY` calls to $0.21. Storing a model version (3.78 GB) is about $0.09 a month.
 
 ## Requirements
 
 - Python 3.12 and the [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index) with a connection configured.
 - A region with GPU_NV_S compute pools and `AI_CLASSIFY`.
 - A role that can:
-  - create a database, a warehouse, compute pools and an external access integration (`CREATE DATABASE`, `CREATE WAREHOUSE`, `CREATE COMPUTE POOL`, `CREATE INTEGRATION` on the account);
-  - create a network rule, an image repository, a model and a service in the schema;
+  - create a database, a warehouse and a compute pool (`CREATE DATABASE`, `CREATE WAREHOUSE`, `CREATE COMPUTE POOL` on the account), and for the service path an external access integration (`CREATE INTEGRATION`);
+  - create an image repository, a model and services (batch jobs are services) in the schema, and for the service path a network rule;
   - call Cortex AI functions (the `SNOWFLAKE.CORTEX_USER` database role);
   - read `SNOWFLAKE.ACCOUNT_USAGE` for the cost queries.
 
@@ -29,14 +29,17 @@ At Standard edition list prices in AWS US West (Oregon), the whole benchmark (se
 | Path | What it does |
 |---|---|
 | `python/decider_model.py` | The Model Registry `CustomModel` wrapper: one `system_one` method that takes JevBench's request and returns decider's response |
-| `python/log_model.py`, `python/create_service.py` | Register the weights with pinned dependencies, then build the image and start the service |
+| `python/log_model_batch.py` | Register the weights for batch jobs as `V11B`: the same wrapper, with ranges for the helper libraries that the batch base image needs |
+| `python/bench_batch.py` | Run a version over the 231 items with `run_batch` on the GPU pool, save the job's output and score it with JevBench's harness |
+| `python/log_model.py`, `python/create_service.py` | The service path: register `V11` with every package pinned, then build the image on a CPU pool and start the service |
+| `python/decider_model_batched.py`, `python/replay_batch_plans.py` | The batched serving path I also tried (slower on these items), and an offline replay of its batch plans |
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
 | `python/smoke_test_local.py` | Run the wrapper in-process on six items and check JevBench parses the output, before any GPU starts |
 | `python/score_with_jevbench.py`, `python/threshold_sweep.py` | Score stored answers with JevBench's harness at commit `bb05a335` |
 | `python/plot_threshold_sweep.py` | Draw the sweep chart from `runs/sweep/report.json`, or `results/sweep_report.json` if you haven't run the sweep |
 | `python/bench_config.py` | Database and schema for the Python scripts |
-| `sql/00`–`10` | Setup, prices, compute, views, the runs, the cascade, throughput, cost and the sweep |
-| `sql/99_teardown.sql` | Drop the service, pools, warehouse and integration |
+| `sql/00`–`10` | Setup, prices, the GPU pool (`02_compute`), the service's build pool and egress (`02_service_build`), views, loading a batch job's output (`05_batch_load`), the service runs, the cascade, throughput, cost and the sweep |
+| `sql/99_teardown.sql` | Drop the pools, warehouse, service and integration |
 | `results/` | The scored outputs behind the post |
 
 ## Run it
@@ -62,7 +65,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r python/requirements.txt
   --local-dir models/decider-2b-v11
 ```
 
-Then, in order:
+Then run the batch job, in order:
 
 ```sh
 $SNOW -f sql/00_setup.sql
@@ -70,6 +73,19 @@ $SNOW -f sql/01_price_assumptions.sql
 .venv/bin/python python/load_jevbench.py
 .venv/bin/python python/smoke_test_local.py
 $SNOW -f sql/02_compute.sql
+.venv/bin/python python/log_model_batch.py V11B
+.venv/bin/python python/bench_batch.py V11B batch_v11b 32   # about 13 minutes the first time, with the image build
+$SNOW -f sql/03_views.sql
+$SNOW -f sql/05_batch_load.sql -D job=DECIDER_BATCH_V11B -D run_id=batch
+$SNOW -f sql/99_teardown.sql
+```
+
+`bench_batch.py` scores the job's answers itself and writes them to `runs/batch_v11b/`. `05_batch_load.sql` puts them in `DECIDER_ANSWERS`, where the views and the SQL reports read them.
+
+The service path, which the cascade scripts use as written (`07_run2_cascade.sql` calls the service for its decider pass):
+
+```sh
+$SNOW -f sql/02_service_build.sql
 .venv/bin/python python/log_model.py
 .venv/bin/python python/create_service.py      # about 15 minutes to a ready container
 $SNOW -f sql/03_views.sql

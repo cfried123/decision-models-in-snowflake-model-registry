@@ -1,0 +1,37 @@
+{
+ "version": "V11B",
+ "job": "DEVREL.DECISION_MODEL_BLOG.DECIDER_BATCH_V11B",
+ "status": "DONE",
+ "max_batch_rows": 32,
+ "submit_s": 426.0,
+ "wall_s": 772.8,
+ "t0_epoch": 1790865657.847261,
+ "t_done_epoch": 1790866430.6447139,
+ "rows": 231,
+ "columns": [
+  "ITEM_ID",
+  "STATE_JSON",
+  "QUESTIONS_JSON",
+  "ANSWER_JSON",
+  "ELAPSED_MS",
+  "INPUT_TOKENS",
+  "RUNTIME_JSON"
+ ],
+ "sum_elapsed_ms": 18146.3,
+ "sum_input_tokens": 145230,
+ "runtime": {
+  "cuda_available": true,
+  "cuda_graphs": true,
+  "cuda_runtime": "12.8",
+  "device": "cuda",
+  "fla_probe": "ok",
+  "gpu": "NVIDIA A10G",
+  "graph_captures": 13,
+  "linear_attention_kernels": "flash-linear-attention (Triton)",
+  "load_s": 46.3,
+  "model": "decider-2b-v11",
+  "torch": "2.10.0+cu128",
+  "torch_compile": false,
+  "warmup_s": 60.1
+ }
+}
