@@ -40,6 +40,7 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | `python/score_with_jevbench.py` | Score the service run's stored answers with JevBench's harness at commit `bb05a335` |
 | `python/bench_config.py` | Database and schema for the Python scripts |
 | `sql/00`–`09` | Setup, prices, the GPU pool (`02_compute`), the service's build pool and egress (`02_service_build`), views, the service pre-flight, loading a batch job's output (`05_batch_load`), the service run, throughput and cost |
+| `app/triage-board/` | A Snowflake App Runtime demo that triages the same support tickets live with decider-2b's REST endpoint and with `claude-sonnet-5` through `AI_COMPLETE`, showing decisions per second, latency and cost side by side; setup and deploy steps are in its README |
 | `sql/99_teardown.sql` | Drop the pools, warehouse, service and integration |
 | `results/` | The scored outputs behind the post |
 

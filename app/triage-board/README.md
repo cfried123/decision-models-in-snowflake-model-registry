@@ -5,6 +5,8 @@ decider-2b and by a frontier LLM. For each ticket both sides make the same two d
 (billing, bug, account access, refund, feature request) and whether to escalate it. The board shows decisions per
 second, p50/p95 latency and a running cost estimate with $ per 1,000 tickets.
 
+![The same support tickets triaged by decider-2b and claude-sonnet-5 side by side](assets/triage_board.gif)
+
 - **decider-2b**: the `DECIDER_2B` model from the Model Registry, run as a real-time inference service
   (`DECIDER_2B_DEMO`, one GPU_NV_S node) and called over its REST endpoint.
 - **LLM**: `AI_COMPLETE` with structured output (default `claude-sonnet-5`; set `LLM_MODEL` to change it).
