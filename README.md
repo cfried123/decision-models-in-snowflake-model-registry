@@ -2,7 +2,7 @@
 
 Code for the Snowflake Developers Blog post "Decisions Are All You Need: Run Open-Weight Decision Models on Snowflake" (link to come).
 
-It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a service called from SQL. Throughput comes from query history and cost from Snowflake's metering views.
+It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a real-time inference service, called over its REST endpoint and from SQL. Throughput comes from query history and client-side timers, and cost from Snowflake's metering views.
 
 decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBench isn't affiliated with TypeSafe AI. Nothing here is a JevBench Score or a leaderboard entry.
 
@@ -10,7 +10,7 @@ decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBenc
 
 The GPU pool bills for every minute its node is up, including the five minutes before auto-suspend. Run `sql/99_teardown.sql` when you're done.
 
-At Standard edition list prices in AWS US West (Oregon), the batch job's GPU time while scoring the 231 decisions is $0.0057, or $0.025 per 1,000 decisions. Each job also holds the node for about 6 minutes to start, load and warm up the model and write its output (about $0.11), and the first job builds the image (about 7 minutes, $0.13). The service path builds its image on a CPU pool (about $0.05), and its GPU node bills for every hour it stays up, busy or not: 0.57 credits, or $1.14, an hour. Storing a model version (3.78 GB) is about $0.09 a month.
+At Standard edition list prices in AWS US West (Oregon), the batch job's GPU time while scoring the 231 decisions is $0.0057, or $0.025 per 1,000 decisions. Each job also holds the node for about 6 minutes to start, load and warm up the model and write its output (about $0.11), and the first job builds the image (about 7 minutes, $0.13). The service path builds its image on a CPU pool (about $0.05), and its GPU node bills for every hour it stays up, busy or not: 0.57 credits, or $1.14, an hour. Over REST, the 231 decisions took 17.7 s from 8 concurrent clients ($0.024 per 1,000 decisions in GPU node time) and 37.4 s from one ($0.051 per 1,000). Storing a model version (3.78 GB) is about $0.09 a month.
 
 ## Requirements
 
@@ -31,6 +31,7 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | `python/log_model_batch.py` | Register the weights for batch jobs as version `BATCH`: the same wrapper, with ranges for the helper libraries that the batch base image needs |
 | `python/bench_batch.py` | Run a version over the 231 items with `run_batch` on the GPU pool, save the job's output and score it with JevBench's harness |
 | `python/log_model.py`, `python/create_service.py` | The service path: register version `SERVICE` with every package pinned, then build the image on a CPU pool and start the service |
+| `python/create_service_http.py`, `python/bench_http.py` | Real-time inference over REST: start the same version as `DECIDER_2B_HTTP` with a public endpoint, then time the 231 items one request at a time, from 8 concurrent clients, and as 20 single-row SQL calls; score the answers with JevBench's harness and price the GPU time |
 | `python/decider_model_batched.py`, `python/replay_batch_plans.py` | The batched serving path I also tried (slower on these items), and an offline replay of its batch plans |
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
 | `python/smoke_test_local.py` | Run the wrapper in-process on six items and check JevBench parses the output, before any GPU starts |
@@ -95,6 +96,17 @@ $SNOW -f sql/99_teardown.sql
 ```
 
 `sql/08_report_throughput.sql` reads `INFORMATION_SCHEMA`, so run it before teardown. `sql/09_cost_accounting.sql` reads `ACCOUNT_USAGE`, which lags by up to a few hours, and works after teardown.
+
+Real-time inference over REST, after the service run (it compares answers with the `service` run):
+
+```sh
+$SNOW -f sql/02_service_build.sql
+.venv/bin/python python/create_service_http.py SERVICE    # about 15 minutes to a ready endpoint
+DECIDER_BENCH_PAT=<programmatic access token> .venv/bin/python python/bench_http.py
+$SNOW -f sql/99_teardown.sql
+```
+
+The endpoint takes `Authorization: Snowflake Token="<PAT>"`; the PAT's role needs the service role `DECIDER_2B_HTTP!ALL_ENDPOINTS_USAGE`, which the owner role has. A session token from the Python connector got HTTP 500 from the ingress in our runs. `bench_http.py` writes `runs/http/` and `runs/rest/`; `results/rest_summary.json` is our run. Client times include the network between your machine and the endpoint.
 
 ## Third-party code and data
 
