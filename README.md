@@ -32,6 +32,7 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | `python/bench_batch.py` | Run a version over the 231 items with `run_batch` on the GPU pool, save the job's output and score it with JevBench's harness |
 | `python/log_model.py`, `python/create_service.py` | The service path: register version `SERVICE` with every package pinned, then build the image on a CPU pool and start the service |
 | `python/create_service_http.py`, `python/bench_http.py` | Real-time inference over REST: start the same version as `DECIDER_2B_HTTP` with a public endpoint, then time the 231 items one request at a time, from 8 concurrent clients, and as 20 single-row SQL calls; score the answers with JevBench's harness and price the GPU time |
+| `python/bench_scaling.py` | Batch throughput as you add model copies per GPU (`num_workers`) or nodes (`replicas`): repeats the 231 items, runs one job per config, and records scoring time, decisions per second, when each worker joined and cost at list price |
 | `python/decider_model_batched.py`, `python/replay_batch_plans.py` | The batched serving path I also tried (slower on these items), and an offline replay of its batch plans |
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
 | `python/smoke_test_local.py` | Run the wrapper in-process on six items and check JevBench parses the output, before any GPU starts |
@@ -107,6 +108,17 @@ $SNOW -f sql/99_teardown.sql
 ```
 
 The endpoint takes `Authorization: Snowflake Token="<PAT>"`; the PAT's role needs the service role `DECIDER_2B_HTTP!ALL_ENDPOINTS_USAGE`, which the owner role has. A session token from the Python connector got HTTP 500 from the ingress in our runs. `bench_http.py` writes `runs/http/` and `runs/rest/`; `results/rest_summary.json` is our run. Client times include the network between your machine and the endpoint.
+
+Scaling a batch job across GPUs (throughput and cost only; the answers aren't scored). Start the nodes before the job so every replica is up when scoring begins:
+
+```sh
+$SNOW -q "CREATE COMPUTE POOL IF NOT EXISTS DECIDER_BENCH_GPU_POOL_S4 MIN_NODES = 4 MAX_NODES = 4 INSTANCE_FAMILY = GPU_NV_S AUTO_RESUME = TRUE AUTO_SUSPEND_SECS = 300"
+# wait until SHOW COMPUTE POOLS LIKE 'DECIDER_BENCH_GPU_POOL_S4' shows 4 idle nodes
+.venv/bin/python python/bench_scaling.py BATCH --pool DECIDER_BENCH_GPU_POOL_S4 --copies 217 out4:4:1
+$SNOW -f sql/99_teardown.sql
+```
+
+`--copies 217` repeats the 231 items into 50,127 rows. In our run, four A10G nodes scored 50.2 decisions per second (one A10G: 13.8) and the job took 22.5 minutes for $1.71 at list price, $0.034 per 1,000 decisions including start-up. `results/scaling_summary.json` has that run and the earlier 4,620-row runs on one pool (one to three model copies per GPU, one or two nodes).
 
 ## Third-party code and data
 
