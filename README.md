@@ -32,6 +32,7 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | `python/bench_batch.py` | Run a version over the 231 items with `run_batch` on the GPU pool, save the job's output and score it with JevBench's harness |
 | `python/log_model.py`, `python/create_service.py` | The service path: register version `SERVICE` with every package pinned, then build the image on a CPU pool and start the service |
 | `python/create_service_http.py`, `python/bench_http.py` | Real-time inference over REST: start the same version as `DECIDER_2B_HTTP` with a public endpoint, then time the 231 items one request at a time, from 8 concurrent clients, and as 20 single-row SQL calls; score the answers with JevBench's harness and price the GPU time |
+| `python/bench_http_sweep.py` | Real-time inference under concurrency: against a service with several instances, runs 1, 4, 16 and 64 closed-loop REST clients for 30 seconds each and records decisions per second, p50/p95/p99 latency, errors, how requests spread across instances and cost at list price |
 | `python/bench_scaling.py` | Batch throughput as you add model copies per GPU (`num_workers`) or nodes (`replicas`): repeats the 231 items, runs one job per config, and records scoring time, decisions per second, when each worker joined and cost at list price |
 | `python/decider_model_batched.py`, `python/replay_batch_plans.py` | The batched serving path I also tried (slower on these items), and an offline replay of its batch plans |
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
@@ -119,6 +120,18 @@ $SNOW -f sql/99_teardown.sql
 ```
 
 `--copies 217` repeats the 231 items into 50,127 rows. In our run, four A10G nodes scored 50.2 decisions per second (one A10G: 13.8) and the job took 22.5 minutes for $1.71 at list price, $0.034 per 1,000 decisions including start-up. `results/scaling_summary.json` has that run and the earlier 4,620-row runs on one pool (one to three model copies per GPU, one or two nodes).
+
+Scaling real-time inference across instances (throughput and latency only; the answers aren't scored). This uses the same four-node pool:
+
+```sh
+$SNOW -f sql/02_service_build.sql
+$SNOW -q "CREATE COMPUTE POOL IF NOT EXISTS DECIDER_BENCH_GPU_POOL_S4 MIN_NODES = 4 MAX_NODES = 4 INSTANCE_FAMILY = GPU_NV_S AUTO_RESUME = TRUE AUTO_SUSPEND_SECS = 300"
+.venv/bin/python python/create_service_http.py SERVICE --name DECIDER_2B_HTTP4 --pool DECIDER_BENCH_GPU_POOL_S4 --instances 4
+DECIDER_BENCH_PAT=<programmatic access token> .venv/bin/python python/bench_http_sweep.py DECIDER_2B_HTTP4 4 1 4 16 64
+$SNOW -f sql/99_teardown.sql
+```
+
+In our run, with no errors, four instances answered in a median of 115 ms with one client and 126 ms with four, reached 40.2 decisions per second at 16 clients (median 356 ms) and 47.5 per second at 64 (median 1.1 s), or $0.027 per 1,000 decisions at list price. Requests spread evenly across the four instances. `results/rest_sweep_summary.json` is that run.
 
 ## Third-party code and data
 
