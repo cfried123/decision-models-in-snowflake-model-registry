@@ -65,6 +65,7 @@ function costUsd(side: SideKey, run: SideRun, prices: Prices, now: number): numb
         prices.llmWarehouseUsdPerHour * hours
 }
 
+const fmtElapsed = (ms: number) => `${(ms / 1000).toFixed(1)} s`
 const fmtMs = (v: number | null) => (v == null ? "–" : v >= 1000 ? `${(v / 1000).toFixed(2)} s` : `${Math.round(v)} ms`)
 const fmtUsd = (v: number | null, digits = 3) => (v == null ? "–" : `$${v < 0.001 ? v.toFixed(5) : v.toFixed(digits)}`)
 /** Running total: four decimals while it's under a dollar so it visibly ticks up. */
@@ -75,7 +76,7 @@ export function TriageBoard() {
   const [config, setConfig] = useState<{ llmModel: string; prices: Prices } | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [running, setRunning] = useState(false)
-  const [concurrency, setConcurrency] = useState(4)
+  const [concurrency, setConcurrency] = useState(1)
   const [runSize, setRunSize] = useState(25)
   const [, setFrame] = useState(0)
 
@@ -111,10 +112,10 @@ export function TriageBoard() {
       .catch((e) => setLoadError(e instanceof Error ? e.message : String(e)))
   }, [])
 
-  // Keep the rolling rate and active-time cost moving while idle frames pass.
+  // Keep the elapsed clock, rolling rate and active-time cost moving while idle frames pass.
   useEffect(() => {
     if (!running) return
-    const id = setInterval(rerender, 500)
+    const id = setInterval(rerender, 100)
     return () => clearInterval(id)
   }, [running, rerender])
 
@@ -332,9 +333,12 @@ function SidePanel(props: {
           <h2 className="text-lg font-semibold tracking-tight" style={{ color: accent }}>{title}</h2>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <span className="font-mono text-sm tabular-nums text-muted-foreground">
-          {run.results.size}/{limit}
-        </span>
+        <div className="flex flex-col items-end font-mono tabular-nums">
+          <span className="text-lg font-semibold" style={{ color: accent }} title="Elapsed time with requests in flight">
+            {fmtElapsed(activeMs(run, now))}
+          </span>
+          <span className="text-xs text-muted-foreground">{run.results.size}/{limit}</span>
+        </div>
       </header>
 
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
