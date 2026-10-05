@@ -1,6 +1,5 @@
 {
  "version": "V11B",
- "job": "DEVREL.DECISION_MODEL_BLOG.DECIDER_BATCH_V11B",
  "status": "DONE",
  "max_batch_rows": 32,
  "submit_s": 426.0,
