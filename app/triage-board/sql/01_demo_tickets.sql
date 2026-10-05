@@ -1,8 +1,8 @@
 -- Support tickets for the triage board, generated once with AI_COMPLETE.
 -- A different model family (openai-gpt-5) writes the tickets than the one the board
--- compares against (claude-sonnet-4-6), so the LLM side isn't judging its own text.
--- GEN_CATEGORY and GEN_ESCALATE are what each ticket was generated to be: synthetic
--- labels, so the board reports agreement with them, not accuracy.
+-- compares against (claude-sonnet-5 by default), so the LLM side isn't judging its own text.
+-- GEN_CATEGORY and GEN_ESCALATE are what each ticket was generated to be; the board
+-- doesn't display them.
 -- snow sql -c <connection> -f app/triage-board/sql/01_demo_tickets.sql
 USE SCHEMA DEVREL.DECISION_MODEL_BLOG;
 USE WAREHOUSE DECIDER_DEMO_WH;

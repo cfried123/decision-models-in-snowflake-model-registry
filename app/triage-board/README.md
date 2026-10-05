@@ -2,8 +2,9 @@
 
 A Snowflake App Runtime (Next.js) demo: the same stream of support tickets is triaged live, side by side, by
 decider-2b and by a frontier LLM. For each ticket both sides make the same two decisions, which team handles it
-(billing, bug, account access, refund, feature request) and whether to escalate it. The board shows decisions per
-second, p50/p95 latency and a running cost estimate with $ per 1,000 tickets.
+(billing, bug, account access, refund, feature request) and whether to escalate it. Each board shows the elapsed time, the decision count with decisions per second, p50/p95 latency,
+and the total cost with $ per 1,000 tickets. A run defaults to 25 tickets with one request in flight per
+side; both are adjustable above the boards.
 
 ![The same support tickets triaged by decider-2b and claude-sonnet-5 side by side](assets/triage_board.gif)
 
@@ -17,13 +18,23 @@ each model call. Costs are estimates at list price from the Service Consumption 
 is GPU node time while requests are in flight; the LLM is input and output tokens plus the XS warehouse
 `AI_COMPLETE` runs on.
 
+In our 25-ticket run with one request in flight per side, decider-2b finished all 25 in 3.9 s: 6.5 decisions
+per second, 115 ms median latency, $0.049 per 1,000 tickets. `claude-sonnet-5` made 10 in 23.0 s: 0.5 per
+second, 2.17 s median latency, $4.98 per 1,000 tickets. That's the GIF above, paused at 10 LLM decisions.
+
 ## Setup
 
+The names below are the defaults in `app.yml`, `lib/config.ts` (`TICKETS_TABLE`, `DECIDER_SERVICE`,
+`LLM_MODEL`, `LLM_WAREHOUSE`) and `sql/01_demo_tickets.sql`; change them there for your own database and
+schema.
+
 1. Tickets: `snow sql -c <connection> -f sql/01_demo_tickets.sql` (creates `DECIDER_DEMO_WH` first if needed).
-2. decider-2b service with a public endpoint, from the repo root:
-   `python python/create_service_http.py V11 --name DECIDER_2B_DEMO --pool DECIDER_BENCH_GPU_POOL --instances 1`
+2. decider-2b service with a public endpoint, from the repo root, after the service path in the root
+   README has registered version `SERVICE` (`sql/02_service_build.sql`, then `python/log_model.py`):
+   `python python/create_service_http.py SERVICE --name DECIDER_2B_DEMO --pool DECIDER_BENCH_GPU_POOL --instances 1`
 3. In `DEVREL.DECISION_MODEL_BLOG`: a `GENERIC_STRING` secret `DECIDER_DEMO_PAT` holding a programmatic access
-   token whose role can use the service's endpoint, a network rule `DECIDER_DEMO_EGRESS` for the endpoint's
+   token whose role has the service role `DECIDER_2B_DEMO!ALL_ENDPOINTS_USAGE` (the owner role has it), a
+   network rule `DECIDER_DEMO_EGRESS` for the endpoint's
    `*.snowflakecomputing.app` host on port 443, and an external access integration `DECIDER_DEMO_EAI` that allows
    both. `app.yml` mounts the secret as `DECIDER_PAT` and attaches the integration.
 
@@ -53,3 +64,5 @@ DROP NETWORK RULE IF EXISTS DEVREL.DECISION_MODEL_BLOG.DECIDER_DEMO_EGRESS;
 DROP SECRET IF EXISTS DEVREL.DECISION_MODEL_BLOG.DECIDER_DEMO_PAT;
 DROP WAREHOUSE IF EXISTS DECIDER_DEMO_WH;
 ```
+
+The GPU pool, `DECIDER_BENCH_GPU_POOL`, keeps billing while it's up; `sql/99_teardown.sql` at the repo root drops it.

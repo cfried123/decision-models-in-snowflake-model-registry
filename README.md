@@ -1,8 +1,8 @@
 # Run open-weight decision models on Snowflake
 
-Code for the Snowflake Developers Blog post "Decisions Are All You Need: Run Open-Weight Decision Models on Snowflake" (link to come).
+Code for the Snowflake Developers Blog post "Decisions Are All You Need: Run Jev-Class Decision Models on Snowflake" (link to come).
 
-It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a real-time inference service, called over its REST endpoint and from SQL. Throughput comes from query history and client-side timers, and cost from Snowflake's metering views.
+It runs [decider-2b](https://huggingface.co/Mapika/decider-2b), an open-weight decision model, from the Snowflake Model Registry as a batch inference job (`run_batch`) on one NVIDIA A10G, and scores the answers on [JevBench](https://github.com/fstandhartinger/jevbench)'s 231 public decisions with JevBench's own harness. The same model also runs as a real-time inference service, called over its REST endpoint and from SQL, and both paths scale across GPUs. A Snowflake App Runtime app, `app/triage-board/`, puts the real-time service to work triaging support tickets side by side with a frontier LLM. Throughput comes from query history and client-side timers, and cost from Snowflake's metering views.
 
 decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBench isn't affiliated with TypeSafe AI. Nothing here is a JevBench Score or a leaderboard entry.
 
@@ -11,6 +11,8 @@ decider-2b is an independent open model; it isn't TypeSafe AI's Jev, and JevBenc
 The GPU pool bills for every minute its node is up, including the five minutes before auto-suspend. Run `sql/99_teardown.sql` when you're done.
 
 At Standard edition list prices in AWS US West (Oregon), the batch job's GPU time while scoring the 231 decisions is $0.0057, or $0.025 per 1,000 decisions. Each job also holds the node for about 6 minutes to start, load and warm up the model and write its output (about $0.11), and the first job builds the image (about 7 minutes, $0.13). The service path builds its image on a CPU pool (about $0.05), and its GPU node bills for every hour it stays up, busy or not: 0.57 credits, or $1.14, an hour. Over REST, the 231 decisions took 17.7 s from 8 concurrent clients ($0.024 per 1,000 decisions in GPU node time) and 37.4 s from one ($0.051 per 1,000). Storing a model version (3.78 GB) is about $0.09 a month.
+
+The triage board keeps its own decider-2b service on one GPU_NV_S node ($1.14 an hour while it's up) and runs `AI_COMPLETE` on an XS warehouse; its README has the teardown. In our 25-ticket run with one request in flight per side, decider-2b cost $0.049 per 1,000 tickets in GPU time and `claude-sonnet-5` $4.98 per 1,000 in tokens and warehouse time.
 
 ## Requirements
 
@@ -22,6 +24,7 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
   - read `SNOWFLAKE.ACCOUNT_USAGE` for the cost queries.
 
   The scripts don't set a role; they use your connection's default.
+- For the triage board: Node.js and npm, Snowflake CLI 3.26 or later (for `snow app deploy`), Snowflake App Runtime, and `AI_COMPLETE` access to `claude-sonnet-5`.
 
 ## Layout
 
@@ -38,11 +41,12 @@ At Standard edition list prices in AWS US West (Oregon), the batch job's GPU tim
 | `python/load_jevbench.py` | Load the 231 public items into `JEVBENCH_ITEMS` |
 | `python/smoke_test_local.py` | Run the wrapper in-process on six items and check JevBench parses the output, before any GPU starts |
 | `python/score_with_jevbench.py` | Score the service run's stored answers with JevBench's harness at commit `bb05a335` |
-| `python/bench_config.py` | Database and schema for the Python scripts |
+| `python/bench_config.py`, `python/snowpark_session.py` | Database and schema for the Python scripts, and the Snowpark session from your CLI connection |
+| `python/requirements.txt` | The local Python environment |
 | `sql/00`–`09` | Setup, prices, the GPU pool (`02_compute`), the service's build pool and egress (`02_service_build`), views, the service pre-flight, loading a batch job's output (`05_batch_load`), the service run, throughput and cost |
-| `app/triage-board/` | A Snowflake App Runtime demo that triages the same support tickets live with decider-2b's REST endpoint and with `claude-sonnet-5` through `AI_COMPLETE`, showing decisions per second, latency and cost side by side; setup and deploy steps are in its README |
-| `sql/99_teardown.sql` | Drop the pools, warehouse, service and integration |
-| `results/` | The scored outputs behind the post |
+| `sql/99_teardown.sql` | Drop the pools, warehouse, services and integration |
+| `results/` | The scored outputs and summaries behind the post |
+| `app/triage-board/` | A Snowflake App Runtime (Next.js) app that triages the same support tickets live with decider-2b's REST endpoint and with `claude-sonnet-5` through `AI_COMPLETE`, showing elapsed time, decisions per second, latency and cost side by side; setup and deploy steps are in its README |
 
 ## Run it
 
@@ -133,6 +137,8 @@ $SNOW -f sql/99_teardown.sql
 ```
 
 In our run, with no errors, four instances answered in a median of 115 ms with one client and 126 ms with four, reached 40.2 decisions per second at 16 clients (median 356 ms) and 47.5 per second at 64 (median 1.1 s), or $0.027 per 1,000 decisions at list price. Requests spread evenly across the four instances. `results/rest_sweep_summary.json` is that run.
+
+The triage board app, after the service path has registered version `SERVICE`: generate the tickets, start a one-instance service with a public endpoint, create the secret and external access integration, and deploy with `snow app deploy`. The steps are in [`app/triage-board/README.md`](app/triage-board/README.md). In our 25-ticket run with one request in flight per side, decider-2b made 6.5 decisions per second (median 115 ms) and `claude-sonnet-5` made 0.5 per second (median 2.17 s).
 
 ## Third-party code and data
 
