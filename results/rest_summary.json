@@ -1,0 +1,106 @@
+{
+  "endpoint": "public HTTPS ingress, one GPU_NV_S node, num_workers=1, max_batch_rows=32",
+  "client": "this machine, over the internet; reused connection for the sequential pass",
+  "harness": {
+    "n_correct": 175,
+    "n_scorable": 231,
+    "accuracy": 0.7575757575757576,
+    "by_tier": {
+      "easy": "48 of 48",
+      "standard": "64 of 72",
+      "hard": "63 of 111"
+    }
+  },
+  "cost": {
+    "usd_per_gpu_node_hour": 1.14,
+    "sequential_usd_per_1000": 0.0512,
+    "concurrent_usd_per_1000": 0.0242
+  },
+  "sequential": {
+    "wall_s": 37.38,
+    "decisions_per_s": 6.18,
+    "all": {
+      "n": 231,
+      "p50_ms": 103.4,
+      "p95_ms": 427.5,
+      "mean_ms": 161.7
+    },
+    "by_tier": {
+      "easy": {
+        "n": 48,
+        "p50_ms": 95.1,
+        "p95_ms": 113.4,
+        "mean_ms": 97.5
+      },
+      "standard": {
+        "n": 72,
+        "p50_ms": 96.5,
+        "p95_ms": 126.9,
+        "mean_ms": 106.0
+      },
+      "hard": {
+        "n": 111,
+        "p50_ms": 147.2,
+        "p95_ms": 441.9,
+        "mean_ms": 225.7
+      }
+    },
+    "gpu_by_tier": {
+      "easy": {
+        "n": 48,
+        "p50_ms": 17.2,
+        "p95_ms": 17.4,
+        "mean_ms": 16.7
+      },
+      "standard": {
+        "n": 72,
+        "p50_ms": 17.3,
+        "p95_ms": 47.1,
+        "mean_ms": 25.3
+      },
+      "hard": {
+        "n": 111,
+        "p50_ms": 60.9,
+        "p95_ms": 359.8,
+        "mean_ms": 139.7
+      }
+    },
+    "overhead_ms_p50": 78.5
+  },
+  "concurrent": {
+    "clients": 8,
+    "wall_s": 17.66,
+    "decisions_per_s": 13.08,
+    "all": {
+      "n": 231,
+      "p50_ms": 298.1,
+      "p95_ms": 1844.1,
+      "mean_ms": 593.9
+    }
+  },
+  "sql_single_row": {
+    "client": {
+      "n": 20,
+      "p50_ms": 529.4,
+      "p95_ms": 1023.4,
+      "mean_ms": 595.9
+    },
+    "statement": {
+      "n": 20,
+      "p50_ms": 424,
+      "p95_ms": 705,
+      "mean_ms": 453.3
+    },
+    "gpu": {
+      "n": 20,
+      "p50_ms": 31.2,
+      "p95_ms": 276.1,
+      "mean_ms": 97.7
+    }
+  },
+  "same_answer_as_service_run": {
+    "sequential": "231/231",
+    "concurrent": "231/231",
+    "sql": "20/20"
+  }
+}

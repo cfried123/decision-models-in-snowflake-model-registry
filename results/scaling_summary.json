@@ -1,0 +1,68 @@
+{
+ "note": "Batch inference scaling for decider-2b (V11B) on A10G GPUs. 4,620-row runs: one GPU_NV_S pool; 50,127-row run: four pre-started GPU_NV_S nodes. Throughput only; answers not scored.",
+ "x20_4620_rows": [
+  {
+   "name": "n1w1",
+   "replicas": 1,
+   "num_workers": 1,
+   "rows": 4620,
+   "job_s": 782.8,
+   "scoring_s": 335.2,
+   "decisions_per_s": 13.8,
+   "sum_gpu_ms": 338963.2
+  },
+  {
+   "name": "n1w3",
+   "replicas": 1,
+   "num_workers": 3,
+   "rows": 4620,
+   "job_s": 809.7,
+   "scoring_s": 354.3,
+   "decisions_per_s": 13.0,
+   "sum_gpu_ms": 1000891.0
+  },
+  {
+   "name": "n2w1",
+   "replicas": 2,
+   "num_workers": 1,
+   "rows": 4620,
+   "job_s": 533.0,
+   "scoring_s": 341.5,
+   "decisions_per_s": 13.5,
+   "sum_gpu_ms": 344974.2
+  },
+  {
+   "name": "n2w3",
+   "replicas": 2,
+   "num_workers": 3,
+   "rows": 4620,
+   "job_s": 592.6,
+   "scoring_s": 345.3,
+   "decisions_per_s": 13.4,
+   "sum_gpu_ms": 1005262.3
+  }
+ ],
+ "x217_50127_rows": [
+  {
+   "name": "out4",
+   "replicas": 4,
+   "num_workers": 1,
+   "gpu_requests": 1,
+   "status": "DONE",
+   "rows": 50127,
+   "job_s": 1351.0,
+   "submit_s": 4.3,
+   "scoring_s": 998.0,
+   "decisions_per_s": 50.2,
+   "sum_gpu_ms": 3658494.3,
+   "worker_joined_utc": {
+    "1": "2026-10-02 15:39:36",
+    "2": "2026-10-02 15:39:37",
+    "3": "2026-10-02 15:39:36"
+   },
+   "usd_job": 1.711,
+   "usd_per_1000_all_in": 0.0341,
+   "usd_per_1000_scoring": 0.0252
+  }
+ ]
+}
