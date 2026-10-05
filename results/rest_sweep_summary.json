@@ -1,0 +1,75 @@
+{
+  "service": "DECIDER_2B_HTTP4",
+  "instances": 4,
+  "hardware": "4x GPU_NV_S (1x NVIDIA A10G each), num_workers=1, max_batch_rows=32",
+  "client": "this machine, over the internet; one decision per request, closed loop",
+  "step_s": 30,
+  "usd_per_hour": 4.56,
+  "steps": [
+    {
+      "clients": 1,
+      "wall_s": 30.3,
+      "requests": 159,
+      "ok": 159,
+      "errors": 0,
+      "error_kinds": [],
+      "decisions_per_s": 5.25,
+      "p50_ms": 114.9,
+      "p95_ms": 447.6,
+      "p99_ms": 530.1,
+      "gpu_p50_ms": 31.6,
+      "usd_per_1000": 0.2413
+    },
+    {
+      "clients": 4,
+      "wall_s": 30.27,
+      "requests": 592,
+      "ok": 592,
+      "errors": 0,
+      "error_kinds": [],
+      "decisions_per_s": 19.56,
+      "p50_ms": 126.4,
+      "p95_ms": 458.8,
+      "p99_ms": 1005.5,
+      "gpu_p50_ms": 19.5,
+      "usd_per_1000": 0.0648
+    },
+    {
+      "clients": 16,
+      "wall_s": 30.4,
+      "requests": 1222,
+      "ok": 1222,
+      "errors": 0,
+      "error_kinds": [],
+      "decisions_per_s": 40.2,
+      "p50_ms": 355.8,
+      "p95_ms": 930.1,
+      "p99_ms": 1192.5,
+      "gpu_p50_ms": 19.3,
+      "usd_per_1000": 0.0315
+    },
+    {
+      "clients": 64,
+      "wall_s": 32.17,
+      "requests": 1528,
+      "ok": 1528,
+      "errors": 0,
+      "error_kinds": [],
+      "decisions_per_s": 47.5,
+      "p50_ms": 1113.4,
+      "p95_ms": 2921.7,
+      "p99_ms": 3385.4,
+      "gpu_p50_ms": 23.1,
+      "usd_per_1000": 0.0267
+    }
+  ],
+  "load_spread": {
+    "method": "POST /system-one lines in each instance's last 1,000 model-inference log lines, right after the sweep",
+    "per_instance": {
+      "0": 486,
+      "1": 525,
+      "2": 508,
+      "3": 503
+    }
+  }
+}

@@ -1,12 +1,12 @@
--- decider-2b on JevBench: shared objects for both runs.
+-- decider-2b on JevBench: shared objects for the batch job and the service.
 -- $SNOW -f sql/00_setup.sql
 
 CREATE DATABASE IF NOT EXISTS <% database %>;
 CREATE SCHEMA IF NOT EXISTS <% database %>.<% schema %>
-  COMMENT = 'decider-2b (open weights) on JevBench public items, alone and cascaded to AI_CLASSIFY';
+  COMMENT = 'decider-2b (open weights) on JevBench public items';
 USE SCHEMA <% database %>.<% schema %>;
 
--- Used only by the pre-flight, the two runs and the token pre-count, so its
+-- Used only by the pre-flight and the service run, so its
 -- metering is the benchmark's warehouse cost. Setup and analysis run elsewhere.
 CREATE WAREHOUSE IF NOT EXISTS DECIDER_BENCH_WH
   WAREHOUSE_SIZE = 'XSMALL'
@@ -34,14 +34,6 @@ CREATE TABLE IF NOT EXISTS RUN_LOG (
 
 -- Raw service-function output: {"ANSWER_JSON": ..., "ELAPSED_MS": ..., "INPUT_TOKENS": ...}
 CREATE TABLE IF NOT EXISTS DECIDER_ANSWERS (
-  RUN_ID      STRING,
-  ITEM_ID     STRING,
-  RESULT      VARIANT,
-  INSERTED_AT TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP()
-);
-
--- Raw AI_CLASSIFY output ({"labels": [...]}) for escalated rows only.
-CREATE TABLE IF NOT EXISTS AI_CLASSIFY_ANSWERS (
   RUN_ID      STRING,
   ITEM_ID     STRING,
   RESULT      VARIANT,

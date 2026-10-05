@@ -5,7 +5,6 @@ against datasets/manifest.json, and stores one row per decision with:
   * STATE_JSON / QUESTIONS_JSON: the exact request JevBench's `typesafe`
     adapter sends, built with its own build_question(). Stored as text so key
     order (which fixes option order) survives.
-  * CLASSIFY_*: the same item mapped to AI_CLASSIFY arguments for the cascade.
 
     SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/load_jevbench.py
 """
@@ -22,46 +21,11 @@ SPLITS = [("easy", "easy"), ("original", "standard"), ("hard", "hard")]   # (fil
 EXPECTED_COUNTS = {("easy", "choice"): 36, ("easy", "noul"): 12,
                    ("standard", "choice"): 36, ("standard", "noul"): 24, ("standard", "score"): 12,
                    ("hard", "choice"): 67, ("hard", "noul"): 38, ("hard", "score"): 6}
-MAX_DESCRIPTION_WORDS = 25    # AI_CLASSIFY label description limit
-MAX_TASK_WORDS = 50           # AI_CLASSIFY task_description limit
 
 sys.path.insert(0, str(JEVBENCH))
 sys.path.insert(0, str(ROOT / "python"))
 from jevbench.adapters.base import build_question  # noqa: E402
 from jevbench.tasks import Task  # noqa: E402
-
-
-def words(text):
-    return len(str(text).split())
-
-
-def state_text(state):
-    # The rendering JevBench's openai_compat adapter uses for instruction models.
-    return state if isinstance(state, str) else json.dumps(state, ensure_ascii=False)
-
-
-def classify_args(task):
-    """-> (input text, categories, task description, rubric_in_input)."""
-    q = task.question
-    crit = q.get("criteria")
-    if q["type"] == "choice":
-        pairs = [(k, crit.get(k)) for k in crit]                      # criteria order, as decider sees it
-    elif q["type"] == "noul":
-        pairs = [("no", (crit or {}).get("false")), ("yes", (crit or {}).get("true"))]
-    else:                                                             # score: level index -> level text
-        levels = crit if isinstance(crit, list) else [crit[k] for k in sorted(crit, key=float)]
-        pairs = [(str(i), level) for i, level in enumerate(levels)]
-    assert [k for k, _ in pairs] == task.labels or sorted(k for k, _ in pairs) == sorted(task.labels), task.id
-    text = state_text(task.state)
-    too_long = any(d is not None and words(d) > MAX_DESCRIPTION_WORDS for _, d in pairs)
-    if too_long:
-        # Over the description limit: send plain labels and put the rubric in the input.
-        cats = [{"label": k} for k, _ in pairs]
-        text += "\n\nOptions:\n" + "\n".join(f"{k}: {d}" for k, d in pairs)
-    else:
-        cats = [{"label": k, **({"description": str(d)} if d not in (None, "") else {})} for k, d in pairs]
-    assert words(q["instructions"]) <= MAX_TASK_WORDS, task.id
-    return text, cats, q["instructions"], too_long
 
 
 def main():
@@ -78,15 +42,12 @@ def main():
                 continue
             raw = json.loads(line)
             task = Task.from_dict(raw)                                   # JevBench's own validation
-            text, cats, task_desc, rubric_in_input = classify_args(task)
             rows.append({
                 "ITEM_ID": task.id, "TIER": tier, "FAMILY": task.family, "QTYPE": task.question["type"],
                 "N_OPTIONS": len(task.labels), "LABELS": task.labels, "EXPECTED": task.expected,
                 "GRP": task.group, "STATE_IS_OBJECT": not isinstance(task.state, str),
                 "STATE_JSON": json.dumps(task.state, ensure_ascii=False),
                 "QUESTIONS_JSON": json.dumps({"decision": build_question(task)}, ensure_ascii=False),
-                "CLASSIFY_INPUT": text, "CLASSIFY_CATEGORIES": cats, "CLASSIFY_TASK_DESCRIPTION": task_desc,
-                "CLASSIFY_RUBRIC_IN_INPUT": rubric_in_input,
                 "SURFACE_ANSWER": task.provenance.get("surface_answer"),
                 "PROVENANCE": task.provenance, "ITEM_JSON": line,
                 "SOURCE_FILE": f"datasets/public/{fname}.jsonl", "SOURCE_SHA256": digest,
@@ -95,8 +56,7 @@ def main():
     counts = Counter((r["TIER"], r["QTYPE"]) for r in rows)
     assert dict(counts) == EXPECTED_COUNTS, counts
     assert len({r["ITEM_ID"] for r in rows}) == len(rows) == 231
-    print(f"{len(rows)} items verified; rubric moved into input for:",
-          [r["ITEM_ID"] for r in rows if r["CLASSIFY_RUBRIC_IN_INPUT"]])
+    print(f"{len(rows)} items verified")
 
     out = ROOT / "runs" / "jevbench_items.jsonl"
     out.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
@@ -114,9 +74,6 @@ def main():
           $1:QTYPE::STRING AS QTYPE, $1:N_OPTIONS::NUMBER AS N_OPTIONS, $1:LABELS::ARRAY AS LABELS,
           $1:EXPECTED AS EXPECTED, $1:GRP::STRING AS GRP, $1:STATE_IS_OBJECT::BOOLEAN AS STATE_IS_OBJECT,
           $1:STATE_JSON::STRING AS STATE_JSON, $1:QUESTIONS_JSON::STRING AS QUESTIONS_JSON,
-          $1:CLASSIFY_INPUT::STRING AS CLASSIFY_INPUT, $1:CLASSIFY_CATEGORIES::ARRAY AS CLASSIFY_CATEGORIES,
-          $1:CLASSIFY_TASK_DESCRIPTION::STRING AS CLASSIFY_TASK_DESCRIPTION,
-          $1:CLASSIFY_RUBRIC_IN_INPUT::BOOLEAN AS CLASSIFY_RUBRIC_IN_INPUT,
           $1:SURFACE_ANSWER::STRING AS SURFACE_ANSWER, $1:PROVENANCE AS PROVENANCE,
           $1:ITEM_JSON::STRING AS ITEM_JSON, $1:SOURCE_FILE::STRING AS SOURCE_FILE,
           $1:SOURCE_SHA256::STRING AS SOURCE_SHA256, $1:SOURCE_COMMIT::STRING AS SOURCE_COMMIT
