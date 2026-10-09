@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from snowflake.ml.registry import Registry  # noqa: E402
 
-from bench_config import DATABASE, FQ_SCHEMA, SCHEMA  # noqa: E402
+from bench_config import DATABASE, FQ_SCHEMA, MODEL_NAME, SCHEMA  # noqa: E402
 from snowpark_session import create_snowpark_session  # noqa: E402
 
 
@@ -27,7 +27,7 @@ def main(version, name, pool, instances):
     session = create_snowpark_session()
     session.use_schema(FQ_SCHEMA)
     reg = Registry(session=session, database_name=DATABASE, schema_name=SCHEMA)
-    mv = reg.get_model("DECIDER_2B").version(version)
+    mv = reg.get_model(MODEL_NAME).version(version)
     t0 = time.time()
     print(f"creating {name} from version {version}, {instances} instance(s) on {pool} ...", flush=True)
     mv.create_service(
@@ -50,7 +50,7 @@ def main(version, name, pool, instances):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("version", nargs="?", default="SERVICE")
-    p.add_argument("--name", default="DECIDER_2B_HTTP")
+    p.add_argument("--name", default="DTR_DECIDER_HTTP")
     p.add_argument("--pool", default="DECIDER_BENCH_GPU_POOL")
     p.add_argument("--instances", type=int, default=1)
     a = p.parse_args()
