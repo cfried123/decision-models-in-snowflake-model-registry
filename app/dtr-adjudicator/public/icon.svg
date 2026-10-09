@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#0a2f5a"/>
+  <!-- incoming ticket -->
+  <rect x="22" y="8" width="20" height="12" rx="3" fill="#ffffff"/>
+  <rect x="25.5" y="12" width="13" height="2" rx="1" fill="#0a2f5a" opacity="0.5"/>
+  <rect x="25.5" y="15.5" width="8" height="2" rx="1" fill="#0a2f5a" opacity="0.5"/>
+  <!-- splits to two boards -->
+  <path d="M32 20v6M32 26H17v6M32 26h15v6" stroke="#29b5e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- left board: three lanes -->
+  <rect x="7" y="35" width="6" height="20" rx="2" fill="#29b5e8"/>
+  <rect x="15" y="41" width="6" height="14" rx="2" fill="#29b5e8" opacity="0.75"/>
+  <rect x="23" y="46" width="6" height="9" rx="2" fill="#29b5e8" opacity="0.5"/>
+  <!-- right board: three lanes -->
+  <rect x="35" y="35" width="6" height="20" rx="2" fill="#7cb9e0"/>
+  <rect x="43" y="41" width="6" height="14" rx="2" fill="#7cb9e0" opacity="0.75"/>
+  <rect x="51" y="46" width="6" height="9" rx="2" fill="#7cb9e0" opacity="0.5"/>
+</svg>

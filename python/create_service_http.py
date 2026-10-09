@@ -11,6 +11,7 @@ python/bench_http.py and python/bench_http_sweep.py call it.
         --name DECIDER_2B_HTTP4 --pool DECIDER_BENCH_GPU_POOL_S4 --instances 4
 """
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -19,15 +20,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from snowflake.ml.registry import Registry  # noqa: E402
 
-from bench_config import DATABASE, FQ_SCHEMA, SCHEMA  # noqa: E402
+from bench_config import DATABASE, FQ_SCHEMA, MODEL_NAME, SCHEMA  # noqa: E402
 from snowpark_session import create_snowpark_session  # noqa: E402
+
+
+BUILD_EAI = os.environ.get("DECIDER_BUILD_EAI")
 
 
 def main(version, name, pool, instances):
     session = create_snowpark_session()
     session.use_schema(FQ_SCHEMA)
     reg = Registry(session=session, database_name=DATABASE, schema_name=SCHEMA)
-    mv = reg.get_model("DECIDER_2B").version(version)
+    mv = reg.get_model(MODEL_NAME).version(version)
     t0 = time.time()
     print(f"creating {name} from version {version}, {instances} instance(s) on {pool} ...", flush=True)
     mv.create_service(
@@ -35,7 +39,9 @@ def main(version, name, pool, instances):
         service_compute_pool=pool,
         image_build_compute_pool="DECIDER_BENCH_BUILD_POOL",
         image_repo=f"{FQ_SCHEMA}.DECIDER_BENCH_IMAGES",
-        build_external_access_integrations=["DECIDER_BENCH_BUILD_EAI"],
+        # Unset on trial accounts: the model was logged with the Snowflake-managed PyPI
+        # repository, so the image build needs no external access integration.
+        build_external_access_integrations=[BUILD_EAI] if BUILD_EAI else None,
         ingress_enabled=True,         # public HTTPS endpoint; requires BIND SERVICE ENDPOINT
         min_instances=instances,
         max_instances=instances,
@@ -50,7 +56,7 @@ def main(version, name, pool, instances):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("version", nargs="?", default="SERVICE")
-    p.add_argument("--name", default="DECIDER_2B_HTTP")
+    p.add_argument("--name", default="DTR_DECIDER_HTTP")
     p.add_argument("--pool", default="DECIDER_BENCH_GPU_POOL")
     p.add_argument("--instances", type=int, default=1)
     a = p.parse_args()

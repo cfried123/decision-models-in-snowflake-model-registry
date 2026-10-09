@@ -1,15 +1,14 @@
-"""Run one model version over the 231 JevBench items as a Model Registry batch
+"""Run one model version over the DTR-Bench items (DTR_ITEMS) as a Model Registry batch
 inference job (mv.run_batch) on the GPU pool, then score the answers with
-JevBench's harness.
+strands_decider.dtr_eval (the same scorer as the local and frontier-LLM runs).
 
 No warehouse sits in the inference path: the job reads the input from Parquet on
 a stage and writes Parquet back. The warehouse only stages the input and reads
 the output, in separate statements.
 
-    SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/bench_batch.py BATCH batch [max_batch_rows]
+    SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/bench_batch.py BATCH dtr_batch [max_batch_rows]
 
-Writes runs/batch_jobs/<run_id>/{job.json, job.log, answers.json} and the harness output in
-runs/<run_id>/.
+Writes runs/batch_jobs/<run_id>/{job.json, job.log, answers.json, metrics.json}.
 """
 import json
 import sys
@@ -17,6 +16,8 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "strands-decider" / "src"))
+RUNS = Path(__file__).resolve().parents[1] / "runs"
 
 from snowflake.ml.model.batch_inference import (  # noqa: E402
     ImageBuildSpec,
@@ -27,8 +28,7 @@ from snowflake.ml.model.batch_inference import (  # noqa: E402
 )
 from snowflake.ml.registry import Registry  # noqa: E402
 
-from bench_config import DATABASE, FQ_SCHEMA, SCHEMA  # noqa: E402
-from score_with_jevbench import RUNS, ReplayTypeSafe, Task, run_harness  # noqa: E402
+from bench_config import DATABASE, FQ_SCHEMA, MODEL_NAME, SCHEMA  # noqa: E402
 from snowpark_session import create_snowpark_session  # noqa: E402
 
 GPU_POOL = "DECIDER_BENCH_GPU_POOL"
@@ -42,10 +42,10 @@ def main(version, run_id, max_batch_rows):
     session.use_schema(FQ_SCHEMA)
     session.use_warehouse("DECIDER_BENCH_WH")
     mv = Registry(session=session, database_name=DATABASE, schema_name=SCHEMA) \
-        .get_model("DECIDER_2B").version(version)
+        .get_model(MODEL_NAME).version(version)
 
-    X = session.table("JEVBENCH_ITEMS").select("ITEM_ID", "STATE_JSON", "QUESTIONS_JSON")
-    job_name = f"{FQ_SCHEMA}.DECIDER_{run_id.upper()}"
+    X = session.table("DTR_ITEMS").select("ITEM_ID", "STATE_JSON", "QUESTIONS_JSON")
+    job_name = f"{FQ_SCHEMA}.DTR_{run_id.upper()}"
     t0 = time.time()
     job = mv.run_batch(
         X,
@@ -86,18 +86,23 @@ def main(version, run_id, max_batch_rows):
             "runtime": json.loads(runtime) if runtime else None}
     (out / "job.json").write_text(json.dumps(meta, indent=1))
 
-    items = session.table("JEVBENCH_ITEMS").select("ITEM_ID", "TIER", "ITEM_JSON").collect()
+    items = [json.loads(r["ITEM_JSON"]) for r in
+             session.table("DTR_ITEMS").select("ITEM_JSON").collect()]
     session.close()
-    tasks = []
-    for it in items:
-        t = Task.from_dict(json.loads(it["ITEM_JSON"]))
-        t.tier = it["TIER"]
-        tasks.append(t)
-    order = {"easy": 0, "standard": 1, "hard": 2}
-    tasks.sort(key=lambda t: (order[t.tier], t.id))
-    _, summary = run_harness(run_id, ReplayTypeSafe(answers), tasks)
-    print(json.dumps({k: summary[k] for k in ("n_correct", "n_scorable", "accuracy", "brier_mean", "ece")}
-                     | {"wall_s": meta["wall_s"], "sum_elapsed_ms": meta["sum_elapsed_ms"]}, indent=1))
+    from strands_decider import dtr_eval
+
+    preds = {}
+    for item_id, ans in answers.items():
+        a = (ans.get("answers") or {}).get("decision")
+        if a is None:  # error row: counted as an abstention-free miss
+            preds[item_id] = {"decision": "invalid", "argmax": "invalid", "confidence": 0.0}
+            continue
+        d, top, conf = dtr_eval.decide(a)
+        preds[item_id] = {"decision": d, "argmax": top, "confidence": conf}
+    metrics = dtr_eval.score(items, preds)
+    (out / "metrics.json").write_text(json.dumps(metrics, indent=1))
+    print(json.dumps({"all": metrics.get("all"), "holdout": metrics.get("holdout"),
+                      "wall_s": meta["wall_s"], "sum_elapsed_ms": meta["sum_elapsed_ms"]}, indent=1))
 
 
 if __name__ == "__main__":
