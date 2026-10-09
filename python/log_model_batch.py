@@ -6,6 +6,12 @@ constrains click<8.3.0, which the service version's exact huggingface-hub pin ca
 meet. So the packages that set the model's numbers keep the service version's exact
 pins and the helper libraries get ranges the resolver can fit to that base.
 
+Known gap: transformers 5.19 (needed for the Qwen3.5 torso) requires huggingface-hub>=1.31,
+and every huggingface-hub release from 1.16.3 on requires click>=8.4, so this version
+cannot currently resolve on the run_batch base (observed on a trial account, uv:
+"No solution found"). Until that base moves, score DTR-Bench in bulk through the service
+from SQL instead (sql/05_service_dtr.sql), which builds on the create_service base.
+
     SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/log_model_batch.py BATCH
 """
 

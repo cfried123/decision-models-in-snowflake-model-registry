@@ -42,6 +42,8 @@ PACKAGE_DIR = Path(os.environ.get(
 
 # Exact pins, except torch: cuda_version="12.8" adds the PyTorch cu128 wheel index and
 # would rewrite an exact pin to +cu128, which the deployment check rejects.
+PIP_REPOSITORY = os.environ.get("DTR_PIP_REPOSITORY", "snowflake.snowpark.pypi_shared_repository")
+
 PIP_REQUIREMENTS = [
     "torch>=2.10.0,<2.11",
     "transformers==5.19.0",
@@ -97,11 +99,14 @@ def log(version: str, pip_requirements: list[str], what: str) -> None:
         version_name=version,
         signatures={"system_one": SIGNATURE},
         pip_requirements=pip_requirements,
+        # Snowflake-managed PyPI proxy: image builds need no external access integration
+        # (trial accounts cannot create one).
+        artifact_repository_map={"pip": PIP_REPOSITORY},
         target_platforms=["SNOWPARK_CONTAINER_SERVICES"],
         python_version="3.12",
         code_paths=[str(ROOT / "python" / "decider_model.py"), str(PACKAGE_DIR)],
         options={"cuda_version": "12.8", "relax_version": False},
-        comment=(f"strands-decider fine-tuned on DTR Part I (Passenger Movement); base "
+        comment=(f"strands-decider ({WEIGHTS_DIR.name}) for DTR Part I (Passenger Movement); base "
                  f"Qwen/Qwen3.5-2B-Base@{BASE_REVISION[:7]}. {what}"),
     )
     print(f"logged {mv.model_name} {mv.version_name} in {time.time() - t0:.0f}s", flush=True)
