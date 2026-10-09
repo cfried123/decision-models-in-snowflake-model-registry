@@ -15,6 +15,7 @@ import { cleanScenario, decide, isTaskId, stateFor, TASKS, type Determination } 
 
 export const dynamic = "force-dynamic"
 
+/* Security: the configured service name is allowlisted before it reaches SHOW ENDPOINTS, which cannot take binds. */
 const SERVICE_RE = /^[A-Za-z_][A-Za-z0-9_$]*(\.[A-Za-z_][A-Za-z0-9_$]*){0,2}$/
 let endpointUrl: string | null = process.env.DECIDER_ENDPOINT ? `https://${process.env.DECIDER_ENDPOINT}/system-one` : null
 
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
     return Response.json({ requestId, error: "taskId and scenario are required" }, { status: 400 })
   }
   const taskId = body.taskId
+  /* Security: the DTR excerpt comes from the server-side catalog, so a caller cannot inject its own "regulation". */
   const task = TASKS[taskId]
   try {
     const url = await getEndpoint()
@@ -53,6 +55,7 @@ export async function POST(req: Request) {
     const t0 = performance.now()
     const resp = await fetch(url, {
       method: "POST",
+      /* Security: PAT read from a Snowflake secret and sent only in this server-side header (NIST SP 800-53 IA-5). */
       headers: { "Content-Type": "application/json", Authorization: `Snowflake Token="${pat}"` },
       body: JSON.stringify(payload),
     })
@@ -80,6 +83,7 @@ export async function POST(req: Request) {
     }
     return Response.json(result)
   } catch (e) {
+    /* Security: details go to the server log only; the client gets a generic error (OWASP A09). */
     console.error(new Date().toISOString(), "decider call failed", e)
     return Response.json({ requestId, error: "decider call failed" }, { status: 502 })
   }

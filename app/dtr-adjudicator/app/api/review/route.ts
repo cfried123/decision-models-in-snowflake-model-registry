@@ -18,6 +18,7 @@ const SIDES = new Set(["decider", "llm"])
 
 export async function POST(req: Request) {
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>
+  /* Security: server-side allowlist validation of task, side and length-capped text (OWASP ASVS V5). */
   const scenario = cleanScenario(b.scenario)
   const side = String(b.side ?? "")
   if (!isTaskId(b.taskId) || !scenario || !SIDES.has(side)) {
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
   const top = String(b.top ?? "").slice(0, 64)
   try {
     await querySnowflake(
+      /* Security: every reviewer/user value is a bind variable (OWASP A03, NIST SP 800-53 SI-10). */
       `INSERT INTO IDENTIFIER(?) (REQUEST_ID, TASK, SIDE, SCENARIO, DTR_CITATION, MODEL_TOP, MODEL_CONFIDENCE)
        SELECT ?, ?, ?, ?, ?, ?, ?`,
       {
@@ -71,6 +73,7 @@ export async function PATCH(req: Request) {
   const reviewId = Number(b.reviewId)
   const resolution = String(b.resolution ?? "")
   const taskId = b.taskId
+  /* Security: a resolution must be one of the task's option keys, so the queue only stores valid determinations. */
   if (!Number.isInteger(reviewId) || !isTaskId(taskId) || !TASKS[taskId].option_names.includes(resolution)) {
     return Response.json({ error: "reviewId, taskId and a valid resolution are required" }, { status: 400 })
   }

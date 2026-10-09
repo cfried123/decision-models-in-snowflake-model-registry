@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic"
 export async function GET() {
   try {
     const rows = await querySnowflake(
+      /* Security: table name bound via IDENTIFIER(?), never interpolated (OWASP A03 injection). */
       `SELECT ITEM_ID, TASK, SPLIT, SCENARIO, EXPECTED, SME_REVIEW FROM IDENTIFIER(?) ORDER BY ITEM_ID`,
       { binds: [ITEMS_TABLE] },
     )

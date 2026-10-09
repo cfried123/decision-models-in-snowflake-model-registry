@@ -25,6 +25,7 @@ export async function POST(req: Request) {
   const { prompt, format } = llmRequest(taskId, scenario)
   try {
     const t0 = performance.now()
+    /* Security: model, prompt and schema are binds; scenario text never becomes SQL (OWASP A03). */
     const rows = await querySnowflake(SQL, { binds: [LLM_MODEL, prompt, JSON.stringify(format)], warehouse: LLM_WAREHOUSE })
     const modelMs = performance.now() - t0
     const raw = rows[0]?.R
