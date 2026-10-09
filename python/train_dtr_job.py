@@ -8,6 +8,7 @@ Snowflake's managed PyPI repository, so no external access integration is needed
     SNOWFLAKE_CONNECTION_NAME=<connection> .venv/bin/python python/train_dtr_job.py [run_id]
 """
 import os
+import re
 import shutil
 import sys
 import time
@@ -41,6 +42,14 @@ def payload() -> Path:
     shutil.copy(SD / "training" / "dtr" / "finetune_dtr.yaml", out)
     shutil.copytree(V21, out / "v21", ignore=shutil.ignore_patterns(".cache", "eval", "training"))
     shutil.copy(ROOT / "python" / "jobs" / "train_dtr_entry.py", out)
+    # hf_export reads the Apache LICENSE from the installed distribution; the payload is on
+    # sys.path rather than pip-installed, so give it a minimal dist-info to find.
+    version = re.search(r'^version = "([^"]+)"', (SD / "pyproject.toml").read_text(), re.MULTILINE)[1]
+    info = out / f"strands_decider-{version}.dist-info"
+    (info / "licenses").mkdir(parents=True)
+    (info / "METADATA").write_text(
+        f"Metadata-Version: 2.1\nName: strands-decider\nVersion: {version}\nLicense: Apache-2.0\n")
+    shutil.copy(SD / "LICENSE", info / "licenses" / "LICENSE")
     return out
 
 
