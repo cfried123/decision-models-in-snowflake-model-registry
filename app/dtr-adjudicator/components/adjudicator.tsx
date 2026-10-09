@@ -277,7 +277,9 @@ export function Adjudicator() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {SIDES.map((side) => (
-          <ResultPanel key={side} title={titles[side][0]} subtitle={titles[side][1]} accent={titles[side][2]}
+          <ResultPanel key={side}
+            cost1k={side === "decider" && single.decider?.modelMs ? (single.decider.modelMs / 3_600_000) * config.prices.deciderUsdPerHour * 1000 : null}
+            title={titles[side][0]} subtitle={titles[side][1]} accent={titles[side][2]}
             d={single[side]} task={task} busy={busy && !single[side]} />
         ))}
       </div>
@@ -353,7 +355,11 @@ export function Adjudicator() {
   )
 }
 
-function ResultPanel(props: { title: string; subtitle: string; accent: string; d?: Determination; task?: TaskInfo; busy: boolean }) {
+function ResultPanel(props: {
+  title: string; subtitle: string; accent: string; d?: Determination; task?: TaskInfo; busy: boolean
+  /** Estimated GPU cost per 1K decisions at this decision's model time, list price. */
+  cost1k?: number | null
+}) {
   const { title, subtitle, accent, d, task, busy } = props
   const label = (k: string) => task?.options.find(([o]) => o === k)?.[1] ?? k
   return (
@@ -392,6 +398,7 @@ function ResultPanel(props: { title: string; subtitle: string; accent: string; d
           </ul>
           <p className="text-xs text-muted-foreground">
             Cites {d.citation} · {fmtMs(d.modelMs)}
+            {props.cost1k != null ? ` · ≈${fmtUsd(props.cost1k)} / 1K decisions (GPU, list price)` : ""}
             {d.inputTokens ? ` · ${d.inputTokens} input tokens` : ""}
             {d.kind !== "noul" && Object.keys(d.distribution).length === 1 ? " · stated confidence in its own pick" : ""}
           </p>
