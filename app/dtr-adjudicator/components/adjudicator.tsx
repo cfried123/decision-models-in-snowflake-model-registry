@@ -24,10 +24,12 @@ type Prices = {
 }
 type TaskInfo = {
   id: string; label: string; kind: string; citation: string; instructions: string
-  holdout: boolean; options: [string, string][]
+  holdout: boolean; options: [string, string][]; provisions: { section: string; citation: string }[]
 }
 type Config = { llmModel: string; prices: Prices; tasks: TaskInfo[]; policy: { noulBand: number; choiceFloor: number } }
-type Item = { id: string; taskId: string; split: string; scenario: string; expected: string; smeReview: string }
+type Item = {
+  id: string; taskId: string; split: string; section?: string; scenario: string; expected: string; smeReview: string
+}
 type ReviewRow = {
   reviewId: number; requestId: string; taskId: string; side: string; scenario: string
   citation: string; top: string; confidence: number; createdAt: string
@@ -61,20 +63,20 @@ function costUsd(side: SideKey, s: SideStats, p: Prices, now: number) {
     : (s.inputTokens / 1e6) * p.llmInputUsdPerM + (s.outputTokens / 1e6) * p.llmOutputUsdPerM + p.llmWarehouseUsdPerHour * h
 }
 
-async function ask(side: SideKey, requestId: string, taskId: string, scenario: string): Promise<Determination> {
+async function ask(side: SideKey, requestId: string, taskId: string, scenario: string, section?: string): Promise<Determination> {
   const r = await fetch(`/api/decide/${side}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ requestId, taskId, scenario }),
+    body: JSON.stringify({ requestId, taskId, scenario, section }),
   })
   return r.json()
 }
 
-async function enqueue(side: SideKey, scenario: string, d: Determination) {
+async function enqueue(side: SideKey, scenario: string, d: Determination, section?: string) {
   await fetch("/api/review", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ requestId: d.requestId, taskId: d.taskId, scenario, side, top: d.top, confidence: d.confidence }),
+    body: JSON.stringify({ requestId: d.requestId, taskId: d.taskId, section, scenario, side, top: d.top, confidence: d.confidence }),
   })
 }
 
@@ -84,6 +86,7 @@ export function Adjudicator() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [taskId, setTaskId] = useState("")
   const [scenario, setScenario] = useState("")
+  const [section, setSection] = useState("")
   const [busy, setBusy] = useState(false)
   const [single, setSingle] = useState<Partial<Record<SideKey, Determination>>>({})
   const [queue, setQueue] = useState<ReviewRow[]>([])
@@ -122,9 +125,9 @@ export function Adjudicator() {
     const requestId = crypto.randomUUID()
     await Promise.all(
       SIDES.map(async (side) => {
-        const d = await ask(side, requestId, taskId, scenario).catch(() => ({ requestId, error: "request failed" }) as Determination)
+        const d = await ask(side, requestId, taskId, scenario, section || undefined).catch(() => ({ requestId, error: "request failed" }) as Determination)
         setSingle((s) => ({ ...s, [side]: d }))
-        if (!d.error && d.needsReview) await enqueue(side, scenario, d)
+        if (!d.error && d.needsReview) await enqueue(side, scenario, d, section || undefined)
       }),
     )
     setBusy(false)
@@ -139,7 +142,7 @@ export function Adjudicator() {
         const it = items[s.cursor++]
         if (s.inflight === 0) s.activeSince = performance.now()
         s.inflight++
-        ask(side, it.id, it.taskId, it.scenario)
+        ask(side, it.id, it.taskId, it.scenario, it.section)
           .then((d) => {
             if (my !== epoch.current) return
             if (d.error) return void s.errors++
@@ -201,6 +204,7 @@ export function Adjudicator() {
   if (!config) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   const task = config.tasks.find((t) => t.id === taskId)
+  const provision = task?.provisions.find((p) => p.section === section) ?? task?.provisions[0]
   const samples = items.filter((i) => i.taskId === taskId).slice(0, 8)
   const taskOf = (id: string) => config.tasks.find((t) => t.id === id)
   const now = performance.now()
@@ -218,7 +222,7 @@ export function Adjudicator() {
             <select
               aria-label="Determination"
               value={taskId}
-              onChange={(e) => { setTaskId(e.target.value); setSingle({}) }}
+              onChange={(e) => { setTaskId(e.target.value); setSection(""); setSingle({}) }}
               className="rounded-md border border-border bg-background px-2 py-1"
             >
               {config.tasks.map((t) => (
@@ -226,7 +230,23 @@ export function Adjudicator() {
               ))}
             </select>
           </label>
-          <span className="text-xs text-muted-foreground">{task?.citation}</span>
+          {task && task.provisions.length > 1 ? (
+            <label className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Governing provision</span>
+              <select
+                aria-label="Governing provision"
+                value={provision?.section ?? ""}
+                onChange={(e) => { setSection(e.target.value); setSingle({}) }}
+                className="max-w-md rounded-md border border-border bg-background px-2 py-1 text-xs"
+              >
+                {task.provisions.map((p) => (
+                  <option key={p.section} value={p.section}>{p.citation}</option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <span className="text-xs text-muted-foreground">{provision?.citation}</span>
+          )}
         </div>
         <p className="text-sm font-medium">{task?.instructions}</p>
         <textarea
@@ -245,7 +265,7 @@ export function Adjudicator() {
           {samples.map((s) => (
             <button
               key={s.id}
-              onClick={() => { setScenario(s.scenario); setSingle({}) }}
+              onClick={() => { setScenario(s.scenario); setSection(s.section ?? ""); setSingle({}) }}
               className="max-w-56 truncate rounded border border-border px-2 py-0.5 text-xs hover:bg-muted"
               title={s.scenario}
             >

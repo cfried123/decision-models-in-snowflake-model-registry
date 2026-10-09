@@ -7,22 +7,26 @@
 
 import { querySnowflake } from "@/lib/snowflake"
 import { LLM_MODEL, LLM_WAREHOUSE } from "@/lib/config"
-import { clamp01, cleanScenario, decide, isTaskId, llmRequest, TASKS, type Determination } from "@/lib/dtr"
+import { clamp01, cleanScenario, decide, type Determination, isTaskId, llmRequest, provisionFor, TASKS } from "@/lib/dtr"
 
 export const dynamic = "force-dynamic"
 
 const SQL = `SELECT AI_COMPLETE(model => ?, prompt => ?, response_format => PARSE_JSON(?), show_details => TRUE) AS R`
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as { requestId?: unknown; taskId?: unknown; scenario?: unknown }
+  const body = (await req.json().catch(() => ({}))) as { requestId?: unknown; taskId?: unknown; scenario?: unknown; section?: unknown }
   const requestId = String(body.requestId ?? "").slice(0, 64)
   const scenario = cleanScenario(body.scenario)
   if (!isTaskId(body.taskId) || !scenario) {
     return Response.json({ requestId, error: "taskId and scenario are required" }, { status: 400 })
   }
   const taskId = body.taskId
+  const provision = provisionFor(taskId, body.section)
+  if (!provision) {
+    return Response.json({ requestId, error: "section is not a provision of this determination" }, { status: 400 })
+  }
   const task = TASKS[taskId]
-  const { prompt, format } = llmRequest(taskId, scenario)
+  const { prompt, format } = llmRequest(taskId, scenario, provision)
   try {
     const t0 = performance.now()
     /* Security: model, prompt and schema are binds; scenario text never becomes SQL (OWASP A03). */
@@ -52,7 +56,7 @@ export async function POST(req: Request) {
       top: d.top,
       confidence: d.confidence,
       distribution,
-      citation: task.dtr_citation,
+      citation: provision.dtr_citation,
       needsReview: d.decision === "abstain",
       modelMs,
       inputTokens: Number(r.usage?.prompt_tokens ?? 0),

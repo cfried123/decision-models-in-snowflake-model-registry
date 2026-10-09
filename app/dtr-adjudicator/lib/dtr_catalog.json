@@ -6,6 +6,13 @@
    "section": "102.A",
    "dtr_citation": "DTR Part I, Ch. 102, para A.2-A.4 (Travel Authority / Class of Service)",
    "dtr_excerpt": "It is government policy that all travelers must be provided economy or coach airline accommodations for all official travel unless proper justification and documentation are provided (ordinarily before travel) and substantiated to justify premium class accommodations. Economy or coach class includes economy plus or coach elite seating on airlines. ... The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium economy is lower than both first class and business class, but higher than economy plus or coach elite. The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium class travel is only permitted on an exception basis, when fully justified and approved by the premium class approval authority ... Blanket authorization and justification for use of premium class travel is prohibited. In the event premium class tickets are issued without proper approval documentation, the traveler is responsible for the excess cost. Travelers are authorized to upgrade to premium class at their personal expenses or with frequent traveler benefits.",
+   "provisions": [
+    {
+     "section": "102.A",
+     "dtr_citation": "DTR Part I, Ch. 102, para A.2-A.4 (Travel Authority / Class of Service)",
+     "dtr_excerpt": "It is government policy that all travelers must be provided economy or coach airline accommodations for all official travel unless proper justification and documentation are provided (ordinarily before travel) and substantiated to justify premium class accommodations. Economy or coach class includes economy plus or coach elite seating on airlines. ... The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium economy is lower than both first class and business class, but higher than economy plus or coach elite. The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium class travel is only permitted on an exception basis, when fully justified and approved by the premium class approval authority ... Blanket authorization and justification for use of premium class travel is prohibited. In the event premium class tickets are issued without proper approval documentation, the traveler is responsible for the excess cost. Travelers are authorized to upgrade to premium class at their personal expenses or with frequent traveler benefits."
+    }
+   ],
    "question": {
     "type": "choice",
     "instructions": "Which class of accommodation is authorized for this trip under the DTR?",
@@ -31,6 +38,13 @@
    "section": "102.C",
    "dtr_citation": "DTR Part I, Ch. 102, para C.1 (Routing); Ch. 104, para A.1; Ch. 105, para A.2",
    "dtr_excerpt": "Commercial transportation must be used for DoD passengers in the Continental United States (CONUS) except when military transportation is essential to meet training or mission requirements, or when opportune capability is generated as a result of training or logistics support requirements. When travel orders do not direct a specific mode of transportation, or the directed mode is not available, the TO arranging transportation must route passengers using the best value that meets mission requirements. [104.A.1] Because of the passenger count and baggage requirements of group movements, bus transportation is often the most economical and efficient method of moving Department of Defense (DoD) personnel. [105.A.2] Rail will be provided only when it meets mission requirements and is the most cost-effective mode, taking into consideration best value, such as travel time, per diem, and miscellaneous expenses.",
+   "provisions": [
+    {
+     "section": "102.C",
+     "dtr_citation": "DTR Part I, Ch. 102, para C.1 (Routing); Ch. 104, para A.1; Ch. 105, para A.2",
+     "dtr_excerpt": "Commercial transportation must be used for DoD passengers in the Continental United States (CONUS) except when military transportation is essential to meet training or mission requirements, or when opportune capability is generated as a result of training or logistics support requirements. When travel orders do not direct a specific mode of transportation, or the directed mode is not available, the TO arranging transportation must route passengers using the best value that meets mission requirements. [104.A.1] Because of the passenger count and baggage requirements of group movements, bus transportation is often the most economical and efficient method of moving Department of Defense (DoD) personnel. [105.A.2] Rail will be provided only when it meets mission requirements and is the most cost-effective mode, taking into consideration best value, such as travel time, per diem, and miscellaneous expenses."
+    }
+   ],
    "question": {
     "type": "choice",
     "instructions": "Which mode of transportation should the transportation officer arrange?",
@@ -54,6 +68,48 @@
    "section": "102.A",
    "dtr_citation": "DTR Part I, Ch. 102, para A.2-A.4 (Travel Authority / Class of Service)",
    "dtr_excerpt": "It is government policy that all travelers must be provided economy or coach airline accommodations for all official travel unless proper justification and documentation are provided (ordinarily before travel) and substantiated to justify premium class accommodations. Economy or coach class includes economy plus or coach elite seating on airlines. ... The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium economy is lower than both first class and business class, but higher than economy plus or coach elite. The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium class travel is only permitted on an exception basis, when fully justified and approved by the premium class approval authority ... Blanket authorization and justification for use of premium class travel is prohibited. In the event premium class tickets are issued without proper approval documentation, the traveler is responsible for the excess cost. Travelers are authorized to upgrade to premium class at their personal expenses or with frequent traveler benefits.",
+   "provisions": [
+    {
+     "section": "102.A",
+     "dtr_citation": "DTR Part I, Ch. 102, para A.2-A.4 (Travel Authority / Class of Service)",
+     "dtr_excerpt": "It is government policy that all travelers must be provided economy or coach airline accommodations for all official travel unless proper justification and documentation are provided (ordinarily before travel) and substantiated to justify premium class accommodations. Economy or coach class includes economy plus or coach elite seating on airlines. ... The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium economy is lower than both first class and business class, but higher than economy plus or coach elite. The authorizing official must authorize or approve use of this seating service for it to be reimbursable by the Government. Premium class travel is only permitted on an exception basis, when fully justified and approved by the premium class approval authority ... Blanket authorization and justification for use of premium class travel is prohibited. In the event premium class tickets are issued without proper approval documentation, the traveler is responsible for the excess cost. Travelers are authorized to upgrade to premium class at their personal expenses or with frequent traveler benefits."
+    },
+    {
+     "section": "102.B",
+     "dtr_citation": "DTR Part I, Ch. 102, para B (Dual Commitment Transportation)",
+     "dtr_excerpt": "Travelers or government entities are prohibited from making duplicate bookings on any mode of transportation or working to have two types of transportation (military and commercial) simultaneously. Individual or group commercial air, rail, or bus transportation will not be requested or scheduled unless all actions to obtain military transportation have been terminated."
+    },
+    {
+     "section": "102.J",
+     "dtr_citation": "DTR Part I, Ch. 102, para J (Circuitous Travel)",
+     "dtr_excerpt": "Circuitous travel is defined as travel by a route other than the one that would normally be prescribed by a TO between the places listed in authorization travel orders. ... The designated official approves or disapproves requests for circuitous travel. ... The traveler assumes responsibility for all costs exceeding those of the normally prescribed route."
+    },
+    {
+     "section": "102.K",
+     "dtr_citation": "DTR Part I, Ch. 102, para K (TMC)",
+     "dtr_excerpt": "When a TMC is available, it is DoD policy that TMC use by travelers is mandatory IAW JTR par. 010201, “Key Participants”."
+    },
+    {
+     "section": "103.E",
+     "dtr_citation": "DTR Part I, Ch. 103, para E.1-E.2 (GSA City Pair Program)",
+     "dtr_excerpt": "GSA City Pair fares cannot be used to and/or from an unofficial point (such as a leave point) unless the Government is paying for the leave travel to (and/or from) the leave point. ... Exception to the Use of GSA CPP Contract Carriers: One or more of the following travel conditions, which must be certified on the travel order, travel voucher, or other document ... (1) Space or a scheduled flight ... is not available in time to accomplish the purpose of travel, or use of contract service would require the traveler to incur unnecessary overnight lodging costs ... (2) The contract carrier’s flight schedule is inconsistent with explicit policies ... to schedule travel during normal working hours. (3) A non-contract U.S. flag carrier offers a lower fare available to the general public, the use of which will result in a lower total trip cost ... This exception does not apply if the contract carrier(s) offers the same or lower fare and has seats available at that fare, or if the lower fare offered by a non-contract carrier is restricted to the Government and military travelers on official business ... Contractor personnel are not authorized to use Government discount fares (including GSA City Pair fares) ... DoD personnel traveling on official business may not purchase commercial airline tickets at military furlough fares ... A movement of less than 10 members traveling as a group ... is a mandatory user of the GSA CPP. A group movement of 10 or more members ... is a non-mandatory user of the GSA CPP."
+    },
+    {
+     "section": "103.F",
+     "dtr_citation": "DTR Part I, Ch. 103, para F (Use of Foreign Flag Carriers)",
+     "dtr_excerpt": "IASA Category 1 Countries. Unless otherwise restricted by the DoD, air carriers from non-rated or Category 1 countries are approved for use for official travel on an individually ticketed, scheduled-service basis only and will not apply to DoD charter operations or group travel. IASA Category 2 Countries. Air carriers from Category 2 countries may not be used by DoD personnel for official business travel, except: (1) On those legs of a carrier’s route that starts or ends in the United States. (2) In extenuating circumstances ... and the travel is mission-essential, the Geographic Combatant Commander (GCC) or Deputy GCC may authorize the use of the foreign carrier with a written waiver ... travel under a ticket issued by a U.S. certified air carrier which uses space on the aircraft of a foreign flag air carrier under a code-share arrangement is considered to be transportation provided by U.S. air carriers ... In instances where a foreign air carrier engages in code-share arrangements with another foreign air carrier, both air carriers must be from either a FAA-non-rated and/or FAA rated Category 1 country."
+    },
+    {
+     "section": "103.N",
+     "dtr_citation": "DTR Part I, Ch. 103, para N (Defense Contractor Personnel)",
+     "dtr_excerpt": "Defense contractor personnel may be provided transportation on DoD airlift when the Contracting Officer (CO/KO) issues a signed Letter of Authorization (LOA). All LOAs must contain a statement that commercial transportation is not available, obtainable, or capable of meeting the transportation requirement. The LOA will also identify the period of travel, travel origin and destination, prime contract number, sub-contract number, and emergency contact phone number."
+    },
+    {
+     "section": "106.B",
+     "dtr_citation": "DTR Part I, Ch. 106, para B (Rental Services Policy)",
+     "dtr_excerpt": "TOs, TMCs, and travelers must select the lowest-cost rental service that meets the traveler’s official requirements. It is mandatory to obtain rental vehicle reservations through the TMC, when available. ... Rental car use is limited to official purposes, including transportation to and from: Duty Sites, Lodgings, Dining facilities, Drugstores, Barber shops, Places of worship, Cleaning establishments, Similar places required for the traveler’s subsistence, health, or comfort."
+    }
+   ],
    "question": {
     "type": "score",
     "instructions": "Rate the DTR compliance risk of this travel arrangement.",
@@ -77,6 +133,13 @@
    "section": "103.E",
    "dtr_citation": "DTR Part I, Ch. 103, para E.1-E.2 (GSA City Pair Program)",
    "dtr_excerpt": "GSA City Pair fares cannot be used to and/or from an unofficial point (such as a leave point) unless the Government is paying for the leave travel to (and/or from) the leave point. ... Exception to the Use of GSA CPP Contract Carriers: One or more of the following travel conditions, which must be certified on the travel order, travel voucher, or other document ... (1) Space or a scheduled flight ... is not available in time to accomplish the purpose of travel, or use of contract service would require the traveler to incur unnecessary overnight lodging costs ... (2) The contract carrier’s flight schedule is inconsistent with explicit policies ... to schedule travel during normal working hours. (3) A non-contract U.S. flag carrier offers a lower fare available to the general public, the use of which will result in a lower total trip cost ... This exception does not apply if the contract carrier(s) offers the same or lower fare and has seats available at that fare, or if the lower fare offered by a non-contract carrier is restricted to the Government and military travelers on official business ... Contractor personnel are not authorized to use Government discount fares (including GSA City Pair fares) ... DoD personnel traveling on official business may not purchase commercial airline tickets at military furlough fares ... A movement of less than 10 members traveling as a group ... is a mandatory user of the GSA CPP. A group movement of 10 or more members ... is a non-mandatory user of the GSA CPP.",
+   "provisions": [
+    {
+     "section": "103.E",
+     "dtr_citation": "DTR Part I, Ch. 103, para E.1-E.2 (GSA City Pair Program)",
+     "dtr_excerpt": "GSA City Pair fares cannot be used to and/or from an unofficial point (such as a leave point) unless the Government is paying for the leave travel to (and/or from) the leave point. ... Exception to the Use of GSA CPP Contract Carriers: One or more of the following travel conditions, which must be certified on the travel order, travel voucher, or other document ... (1) Space or a scheduled flight ... is not available in time to accomplish the purpose of travel, or use of contract service would require the traveler to incur unnecessary overnight lodging costs ... (2) The contract carrier’s flight schedule is inconsistent with explicit policies ... to schedule travel during normal working hours. (3) A non-contract U.S. flag carrier offers a lower fare available to the general public, the use of which will result in a lower total trip cost ... This exception does not apply if the contract carrier(s) offers the same or lower fare and has seats available at that fare, or if the lower fare offered by a non-contract carrier is restricted to the Government and military travelers on official business ... Contractor personnel are not authorized to use Government discount fares (including GSA City Pair fares) ... DoD personnel traveling on official business may not purchase commercial airline tickets at military furlough fares ... A movement of less than 10 members traveling as a group ... is a mandatory user of the GSA CPP. A group movement of 10 or more members ... is a non-mandatory user of the GSA CPP."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is the fare described authorized for this travel under the DTR?",
@@ -96,6 +159,13 @@
    "section": "103.E",
    "dtr_citation": "DTR Part I, Ch. 103, para E.1-E.2 (GSA City Pair Program)",
    "dtr_excerpt": "GSA City Pair fares cannot be used to and/or from an unofficial point (such as a leave point) unless the Government is paying for the leave travel to (and/or from) the leave point. ... Exception to the Use of GSA CPP Contract Carriers: One or more of the following travel conditions, which must be certified on the travel order, travel voucher, or other document ... (1) Space or a scheduled flight ... is not available in time to accomplish the purpose of travel, or use of contract service would require the traveler to incur unnecessary overnight lodging costs ... (2) The contract carrier’s flight schedule is inconsistent with explicit policies ... to schedule travel during normal working hours. (3) A non-contract U.S. flag carrier offers a lower fare available to the general public, the use of which will result in a lower total trip cost ... This exception does not apply if the contract carrier(s) offers the same or lower fare and has seats available at that fare, or if the lower fare offered by a non-contract carrier is restricted to the Government and military travelers on official business ... Contractor personnel are not authorized to use Government discount fares (including GSA City Pair fares) ... DoD personnel traveling on official business may not purchase commercial airline tickets at military furlough fares ... A movement of less than 10 members traveling as a group ... is a mandatory user of the GSA CPP. A group movement of 10 or more members ... is a non-mandatory user of the GSA CPP.",
+   "provisions": [
+    {
+     "section": "103.E",
+     "dtr_citation": "DTR Part I, Ch. 103, para E.1-E.2 (GSA City Pair Program)",
+     "dtr_excerpt": "GSA City Pair fares cannot be used to and/or from an unofficial point (such as a leave point) unless the Government is paying for the leave travel to (and/or from) the leave point. ... Exception to the Use of GSA CPP Contract Carriers: One or more of the following travel conditions, which must be certified on the travel order, travel voucher, or other document ... (1) Space or a scheduled flight ... is not available in time to accomplish the purpose of travel, or use of contract service would require the traveler to incur unnecessary overnight lodging costs ... (2) The contract carrier’s flight schedule is inconsistent with explicit policies ... to schedule travel during normal working hours. (3) A non-contract U.S. flag carrier offers a lower fare available to the general public, the use of which will result in a lower total trip cost ... This exception does not apply if the contract carrier(s) offers the same or lower fare and has seats available at that fare, or if the lower fare offered by a non-contract carrier is restricted to the Government and military travelers on official business ... Contractor personnel are not authorized to use Government discount fares (including GSA City Pair fares) ... DoD personnel traveling on official business may not purchase commercial airline tickets at military furlough fares ... A movement of less than 10 members traveling as a group ... is a mandatory user of the GSA CPP. A group movement of 10 or more members ... is a non-mandatory user of the GSA CPP."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is use of the non-contract carrier on this City Pair route authorized?",
@@ -115,6 +185,13 @@
    "section": "103.F",
    "dtr_citation": "DTR Part I, Ch. 103, para F (Use of Foreign Flag Carriers)",
    "dtr_excerpt": "IASA Category 1 Countries. Unless otherwise restricted by the DoD, air carriers from non-rated or Category 1 countries are approved for use for official travel on an individually ticketed, scheduled-service basis only and will not apply to DoD charter operations or group travel. IASA Category 2 Countries. Air carriers from Category 2 countries may not be used by DoD personnel for official business travel, except: (1) On those legs of a carrier’s route that starts or ends in the United States. (2) In extenuating circumstances ... and the travel is mission-essential, the Geographic Combatant Commander (GCC) or Deputy GCC may authorize the use of the foreign carrier with a written waiver ... travel under a ticket issued by a U.S. certified air carrier which uses space on the aircraft of a foreign flag air carrier under a code-share arrangement is considered to be transportation provided by U.S. air carriers ... In instances where a foreign air carrier engages in code-share arrangements with another foreign air carrier, both air carriers must be from either a FAA-non-rated and/or FAA rated Category 1 country.",
+   "provisions": [
+    {
+     "section": "103.F",
+     "dtr_citation": "DTR Part I, Ch. 103, para F (Use of Foreign Flag Carriers)",
+     "dtr_excerpt": "IASA Category 1 Countries. Unless otherwise restricted by the DoD, air carriers from non-rated or Category 1 countries are approved for use for official travel on an individually ticketed, scheduled-service basis only and will not apply to DoD charter operations or group travel. IASA Category 2 Countries. Air carriers from Category 2 countries may not be used by DoD personnel for official business travel, except: (1) On those legs of a carrier’s route that starts or ends in the United States. (2) In extenuating circumstances ... and the travel is mission-essential, the Geographic Combatant Commander (GCC) or Deputy GCC may authorize the use of the foreign carrier with a written waiver ... travel under a ticket issued by a U.S. certified air carrier which uses space on the aircraft of a foreign flag air carrier under a code-share arrangement is considered to be transportation provided by U.S. air carriers ... In instances where a foreign air carrier engages in code-share arrangements with another foreign air carrier, both air carriers must be from either a FAA-non-rated and/or FAA rated Category 1 country."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is use of this air carrier authorized for official DoD travel?",
@@ -134,6 +211,13 @@
    "section": "103.N",
    "dtr_citation": "DTR Part I, Ch. 103, para N (Defense Contractor Personnel)",
    "dtr_excerpt": "Defense contractor personnel may be provided transportation on DoD airlift when the Contracting Officer (CO/KO) issues a signed Letter of Authorization (LOA). All LOAs must contain a statement that commercial transportation is not available, obtainable, or capable of meeting the transportation requirement. The LOA will also identify the period of travel, travel origin and destination, prime contract number, sub-contract number, and emergency contact phone number.",
+   "provisions": [
+    {
+     "section": "103.N",
+     "dtr_citation": "DTR Part I, Ch. 103, para N (Defense Contractor Personnel)",
+     "dtr_excerpt": "Defense contractor personnel may be provided transportation on DoD airlift when the Contracting Officer (CO/KO) issues a signed Letter of Authorization (LOA). All LOAs must contain a statement that commercial transportation is not available, obtainable, or capable of meeting the transportation requirement. The LOA will also identify the period of travel, travel origin and destination, prime contract number, sub-contract number, and emergency contact phone number."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is this contractor eligible for transportation on DoD airlift?",
@@ -153,6 +237,18 @@
    "section": "102.K",
    "dtr_citation": "DTR Part I, Ch. 102, para K (TMC)",
    "dtr_excerpt": "When a TMC is available, it is DoD policy that TMC use by travelers is mandatory IAW JTR par. 010201, “Key Participants”.",
+   "provisions": [
+    {
+     "section": "102.K",
+     "dtr_citation": "DTR Part I, Ch. 102, para K (TMC)",
+     "dtr_excerpt": "When a TMC is available, it is DoD policy that TMC use by travelers is mandatory IAW JTR par. 010201, “Key Participants”."
+    },
+    {
+     "section": "102.B",
+     "dtr_citation": "DTR Part I, Ch. 102, para B (Dual Commitment Transportation)",
+     "dtr_excerpt": "Travelers or government entities are prohibited from making duplicate bookings on any mode of transportation or working to have two types of transportation (military and commercial) simultaneously. Individual or group commercial air, rail, or bus transportation will not be requested or scheduled unless all actions to obtain military transportation have been terminated."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is this booking action permitted under DTR Part I?",
@@ -172,6 +268,13 @@
    "section": "106.B",
    "dtr_citation": "DTR Part I, Ch. 106, para B (Rental Services Policy)",
    "dtr_excerpt": "TOs, TMCs, and travelers must select the lowest-cost rental service that meets the traveler’s official requirements. It is mandatory to obtain rental vehicle reservations through the TMC, when available. ... Rental car use is limited to official purposes, including transportation to and from: Duty Sites, Lodgings, Dining facilities, Drugstores, Barber shops, Places of worship, Cleaning establishments, Similar places required for the traveler’s subsistence, health, or comfort.",
+   "provisions": [
+    {
+     "section": "106.B",
+     "dtr_citation": "DTR Part I, Ch. 106, para B (Rental Services Policy)",
+     "dtr_excerpt": "TOs, TMCs, and travelers must select the lowest-cost rental service that meets the traveler’s official requirements. It is mandatory to obtain rental vehicle reservations through the TMC, when available. ... Rental car use is limited to official purposes, including transportation to and from: Duty Sites, Lodgings, Dining facilities, Drugstores, Barber shops, Places of worship, Cleaning establishments, Similar places required for the traveler’s subsistence, health, or comfort."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is this use of the rental car an authorized official purpose?",
@@ -191,6 +294,13 @@
    "section": "107.A",
    "dtr_citation": "DTR Part I, Ch. 107, para A (Commercial Ship Transportation)",
    "dtr_excerpt": "Travel by ship to or from the Continental United States (CONUS) and Outside CONUS (OCONUS) is not usually an authorized mode for transoceanic transportation. ... The use of commercial ships must be authorized or approved in extenuating or emergency situations by the order-issuing authority. ... a. The travel may be completed only by use of ship. b. The travel can be performed more economically or efficiently by ship. c. Cognizant command medical authority certifies the traveler as medically unable to use air transportation and ship travel is the only reasonable alternative. When transportation by ship is authorized/approved, a United States (U.S.) registry ship must be used. If a U.S. registry ship cannot provide transportation service ... transportation may be obtained aboard a foreign registry ship. Required documentation as to the non-availability of a U.S. registry ship must be provided to the traveler.",
+   "provisions": [
+    {
+     "section": "107.A",
+     "dtr_citation": "DTR Part I, Ch. 107, para A (Commercial Ship Transportation)",
+     "dtr_excerpt": "Travel by ship to or from the Continental United States (CONUS) and Outside CONUS (OCONUS) is not usually an authorized mode for transoceanic transportation. ... The use of commercial ships must be authorized or approved in extenuating or emergency situations by the order-issuing authority. ... a. The travel may be completed only by use of ship. b. The travel can be performed more economically or efficiently by ship. c. Cognizant command medical authority certifies the traveler as medically unable to use air transportation and ship travel is the only reasonable alternative. When transportation by ship is authorized/approved, a United States (U.S.) registry ship must be used. If a U.S. registry ship cannot provide transportation service ... transportation may be obtained aboard a foreign registry ship. Required documentation as to the non-availability of a U.S. registry ship must be provided to the traveler."
+    }
+   ],
    "question": {
     "type": "noul",
     "instructions": "Is commercial ship travel authorized at Government expense here?",

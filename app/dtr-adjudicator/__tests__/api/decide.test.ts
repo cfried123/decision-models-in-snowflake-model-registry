@@ -66,6 +66,23 @@ describe("POST /api/decide/decider", () => {
     expect(json).toMatchObject({ decision: "abstain", top: "true", needsReview: true })
   })
 
+  it("sends the excerpt of the requested provision and rejects others", async () => {
+    const answer = { answers: { decision: { type: "noul", noul: 0.05 } } }
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: [[0, { ANSWER_JSON: JSON.stringify(answer) }]] })),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const dual = TASKS.dtr_booking_policy.provisions.find((p) => p.section === "102.B")!
+    const res = await deciderPost(req({ taskId: "dtr_booking_policy", section: "102.B", scenario: "Backup commercial booking." }))
+    const json = await res.json()
+    const state = JSON.parse(JSON.parse(fetchMock.mock.calls[0][1].body).dataframe_split.data[0][0])
+    expect(state).toMatchObject({ dtr_citation: dual.dtr_citation, dtr_excerpt: dual.dtr_excerpt })
+    expect(json).toMatchObject({ decision: "false", citation: dual.dtr_citation })
+    const bad = await deciderPost(req({ taskId: "dtr_booking_policy", section: "999.Z", scenario: "x" }))
+    expect(bad.status).toBe(400)
+    vi.unstubAllGlobals()
+  })
+
   it("rejects unknown tasks and empty scenarios", async () => {
     expect((await deciderPost(req({ taskId: "drop table", scenario: "x" }))).status).toBe(400)
     expect((await deciderPost(req({ taskId: "dtr_rental_use", scenario: "   " }))).status).toBe(400)

@@ -16,11 +16,18 @@ export const CHOICE_FLOOR = 0.5
 export const MAX_SCENARIO_CHARS = 2000
 
 export type Kind = "choice" | "noul" | "score"
+export interface Provision {
+  section: string
+  dtr_citation: string
+  dtr_excerpt: string
+}
 export interface TaskSpec {
   kind: Kind
   section: string
   dtr_citation: string
   dtr_excerpt: string
+  /** Every paragraph this determination's scenarios can turn on; the default first. */
+  provisions: Provision[]
   question: { type: Kind; instructions: string; criteria: Record<string, string> | string[] }
   option_names: string[]
   holdout: boolean
@@ -53,10 +60,23 @@ export function cleanScenario(s: unknown): string | null {
   return t ? t.slice(0, MAX_SCENARIO_CHARS) : null
 }
 
+/**
+ * The governing provision for a request: the task's default when `section` is omitted, or
+ * null when `section` is not one of the task's provisions (callers reject the request).
+ */
+export function provisionFor(taskId: string, section?: unknown): Provision | null {
+  const ps = TASKS[taskId].provisions
+  if (section === undefined || section === null || section === "") return ps[0]
+  return ps.find((p) => p.section === section) ?? null
+}
+
+export function sectionForCitation(taskId: string, citation: string): string | undefined {
+  return TASKS[taskId]?.provisions.find((p) => p.dtr_citation === citation)?.section
+}
+
 /** STATE_JSON for system_one: scenario plus the governing excerpt, as in training. */
-export function stateFor(taskId: string, scenario: string) {
-  const t = TASKS[taskId]
-  return { scenario, dtr_citation: t.dtr_citation, dtr_excerpt: t.dtr_excerpt }
+export function stateFor(taskId: string, scenario: string, p: Provision = TASKS[taskId].provisions[0]) {
+  return { scenario, dtr_citation: p.dtr_citation, dtr_excerpt: p.dtr_excerpt }
 }
 
 /** Option key -> human description, in the order the decider sees them. */
@@ -88,11 +108,13 @@ const SYSTEM =
   "decisive is missing, say so through a probability near 0.5."
 
 /** Prompt and AI_COMPLETE response_format; the same as python/bench_llm_dtr.py. */
-export function llmRequest(taskId: string, scenario: string): { prompt: string; format: object } {
+export function llmRequest(
+  taskId: string, scenario: string, p: Provision = TASKS[taskId].provisions[0],
+): { prompt: string; format: object } {
   const t = TASKS[taskId]
   const crit = t.question.criteria as Record<string, string>
   const head =
-    `${SYSTEM}\n\nScenario: ${scenario}\n\nDTR excerpt (${t.dtr_citation}):\n${t.dtr_excerpt}\n\n` +
+    `${SYSTEM}\n\nScenario: ${scenario}\n\nDTR excerpt (${p.dtr_citation}):\n${p.dtr_excerpt}\n\n` +
     `Question: ${t.question.instructions}\n`
   if (t.kind === "noul") {
     return {

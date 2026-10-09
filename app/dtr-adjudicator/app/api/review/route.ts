@@ -10,7 +10,7 @@
 
 import { querySnowflake } from "@/lib/snowflake"
 import { REVIEW_TABLE } from "@/lib/config"
-import { clamp01, cleanScenario, isTaskId, TASKS } from "@/lib/dtr"
+import { clamp01, cleanScenario, isTaskId, provisionFor, TASKS } from "@/lib/dtr"
 
 export const dynamic = "force-dynamic"
 
@@ -24,6 +24,10 @@ export async function POST(req: Request) {
   if (!isTaskId(b.taskId) || !scenario || !SIDES.has(side)) {
     return Response.json({ error: "taskId, scenario and side are required" }, { status: 400 })
   }
+  const provision = provisionFor(b.taskId, b.section)
+  if (!provision) {
+    return Response.json({ error: "section is not a provision of this determination" }, { status: 400 })
+  }
   const top = String(b.top ?? "").slice(0, 64)
   try {
     await querySnowflake(
@@ -32,7 +36,7 @@ export async function POST(req: Request) {
        SELECT ?, ?, ?, ?, ?, ?, ?`,
       {
         binds: [REVIEW_TABLE, String(b.requestId ?? "").slice(0, 64), b.taskId, side, scenario,
-          TASKS[b.taskId].dtr_citation, top, clamp01(b.confidence)],
+          provision.dtr_citation, top, clamp01(b.confidence)],
       },
     )
     return Response.json({ queued: true })

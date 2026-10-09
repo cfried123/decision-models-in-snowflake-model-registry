@@ -9,6 +9,7 @@ export async function GET() {
   const tasks = TASK_IDS.map((id) => ({
     id, label: TASK_LABELS[id] ?? id, kind: TASKS[id].kind, citation: TASKS[id].dtr_citation,
     instructions: TASKS[id].question.instructions, holdout: TASKS[id].holdout,
+    provisions: TASKS[id].provisions.map((p) => ({ section: p.section, citation: p.dtr_citation })),
     options: Array.isArray(TASKS[id].question.criteria)
       ? (TASKS[id].question.criteria as string[]).map((d, i) => [String(i), d])
       : Object.entries(TASKS[id].question.criteria),

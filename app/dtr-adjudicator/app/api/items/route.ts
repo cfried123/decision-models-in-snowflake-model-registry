@@ -5,6 +5,7 @@
 
 import { querySnowflake } from "@/lib/snowflake"
 import { ITEMS_TABLE } from "@/lib/config"
+import { isTaskId, sectionForCitation } from "@/lib/dtr"
 
 export const dynamic = "force-dynamic"
 
@@ -12,18 +13,22 @@ export async function GET() {
   try {
     const rows = await querySnowflake(
       /* Security: table name bound via IDENTIFIER(?), never interpolated (OWASP A03 injection). */
-      `SELECT ITEM_ID, TASK, SPLIT, SCENARIO, EXPECTED, SME_REVIEW FROM IDENTIFIER(?) ORDER BY ITEM_ID`,
+      `SELECT ITEM_ID, TASK, SPLIT, DTR_CITATION, SCENARIO, EXPECTED, SME_REVIEW FROM IDENTIFIER(?) ORDER BY ITEM_ID`,
       { binds: [ITEMS_TABLE] },
     )
     return Response.json(
-      rows.map((r: Record<string, unknown>) => ({
-        id: String(r.ITEM_ID),
-        taskId: String(r.TASK),
-        split: String(r.SPLIT),
-        scenario: String(r.SCENARIO),
-        expected: String(r.EXPECTED),
-        smeReview: String(r.SME_REVIEW),
-      })),
+      rows
+        /* Provision-routing items have no adjudication form in the app. */
+        .filter((r: Record<string, unknown>) => isTaskId(String(r.TASK)))
+        .map((r: Record<string, unknown>) => ({
+          id: String(r.ITEM_ID),
+          taskId: String(r.TASK),
+          split: String(r.SPLIT),
+          section: sectionForCitation(String(r.TASK), String(r.DTR_CITATION)),
+          scenario: String(r.SCENARIO),
+          expected: String(r.EXPECTED),
+          smeReview: String(r.SME_REVIEW),
+        })),
     )
   } catch (e) {
     console.error(new Date().toISOString(), "items query failed", e)

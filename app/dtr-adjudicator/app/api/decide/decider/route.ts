@@ -11,7 +11,7 @@
 
 import { getSecret, querySnowflake, SecretType } from "@/lib/snowflake"
 import { DECIDER_SERVICE } from "@/lib/config"
-import { cleanScenario, decide, isTaskId, stateFor, TASKS, type Determination } from "@/lib/dtr"
+import { cleanScenario, decide, isTaskId, provisionFor, stateFor, TASKS, type Determination } from "@/lib/dtr"
 
 export const dynamic = "force-dynamic"
 
@@ -33,13 +33,17 @@ async function getEndpoint(): Promise<string> {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as { requestId?: unknown; taskId?: unknown; scenario?: unknown }
+  const body = (await req.json().catch(() => ({}))) as { requestId?: unknown; taskId?: unknown; scenario?: unknown; section?: unknown }
   const requestId = String(body.requestId ?? "").slice(0, 64)
   const scenario = cleanScenario(body.scenario)
   if (!isTaskId(body.taskId) || !scenario) {
     return Response.json({ requestId, error: "taskId and scenario are required" }, { status: 400 })
   }
   const taskId = body.taskId
+  const provision = provisionFor(taskId, body.section)
+  if (!provision) {
+    return Response.json({ requestId, error: "section is not a provision of this determination" }, { status: 400 })
+  }
   /* Security: the DTR excerpt comes from the server-side catalog, so a caller cannot inject its own "regulation". */
   const task = TASKS[taskId]
   try {
@@ -49,7 +53,7 @@ export async function POST(req: Request) {
       dataframe_split: {
         index: [0],
         columns: ["STATE_JSON", "QUESTIONS_JSON"],
-        data: [[JSON.stringify(stateFor(taskId, scenario)), JSON.stringify({ decision: task.question })]],
+        data: [[JSON.stringify(stateFor(taskId, scenario, provision)), JSON.stringify({ decision: task.question })]],
       },
     }
     const t0 = performance.now()
@@ -76,7 +80,7 @@ export async function POST(req: Request) {
       top: d.top,
       confidence: d.confidence,
       distribution,
-      citation: task.dtr_citation,
+      citation: provision.dtr_citation,
       needsReview: d.decision === "abstain",
       modelMs,
       inputTokens: Number(out.INPUT_TOKENS ?? 0),
