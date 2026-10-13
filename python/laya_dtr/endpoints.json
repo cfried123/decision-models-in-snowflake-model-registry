@@ -1,0 +1,38 @@
+[
+  {
+    "label": "Laya base (zero-shot)",
+    "family": "laya",
+    "model": "LAYA_DTR",
+    "version": "BASE",
+    "service": "LAYA_DTR_BASE_SVC",
+    "pool": "LAYA_CPU_POOL",
+    "usd_per_hour": 0.44
+  },
+  {
+    "label": "Laya DTR fine-tune",
+    "family": "laya",
+    "model": "LAYA_DTR",
+    "version": "FT",
+    "service": "LAYA_DTR_FT_SVC",
+    "pool": "LAYA_CPU_POOL",
+    "usd_per_hour": 0.44
+  },
+  {
+    "label": "strands-decider base (v21)",
+    "family": "strands-decider",
+    "model": "DTR_DECIDER",
+    "version": "V21_SERVICE",
+    "service": "DTR_DECIDER_V21_SVC",
+    "pool": "DECIDER_BENCH_GPU_POOL",
+    "usd_per_hour": 1.14
+  },
+  {
+    "label": "strands-decider DTR fine-tune",
+    "family": "strands-decider",
+    "model": "DTR_DECIDER",
+    "version": "FT_SERVICE",
+    "service": "DTR_DECIDER_HTTP",
+    "pool": "DECIDER_BENCH_GPU_POOL",
+    "usd_per_hour": 1.14
+  }
+]
