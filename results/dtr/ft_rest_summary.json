@@ -1,0 +1,58 @@
+{
+  "service": "DTR_DECIDER_HTTP",
+  "run_id": "ft_rest",
+  "endpoint": "public HTTPS ingress, one GPU_NV_S node, num_workers=1, max_batch_rows=32",
+  "metrics": {
+    "all": {
+      "n": 142,
+      "strict_accuracy": 0.9859154929577465,
+      "forced_accuracy": 0.9847328244274809,
+      "coverage": 0.9847328244274809,
+      "selective_accuracy": 1.0,
+      "abstain_recall": 1.0,
+      "ece": 0.02699770992366417
+    },
+    "holdout": {
+      "n": 22,
+      "strict_accuracy": 0.9090909090909091,
+      "forced_accuracy": 0.9,
+      "coverage": 0.9,
+      "selective_accuracy": 1.0,
+      "abstain_recall": 1.0,
+      "ece": 0.09786999999999998
+    }
+  },
+  "cost": {
+    "usd_per_gpu_node_hour": 1.14,
+    "sequential_usd_per_1000": 0.0432,
+    "concurrent_usd_per_1000": 0.0223
+  },
+  "sequential": {
+    "wall_s": 19.38,
+    "decisions_per_s": 7.33,
+    "client": {
+      "n": 142,
+      "p50_ms": 132.3,
+      "p95_ms": 138.9,
+      "mean_ms": 136.4
+    },
+    "gpu": {
+      "n": 142,
+      "p50_ms": 68.1,
+      "p95_ms": 72.4,
+      "mean_ms": 68.5
+    }
+  },
+  "concurrent": {
+    "clients": 8,
+    "wall_s": 10.01,
+    "decisions_per_s": 14.19,
+    "client": {
+      "n": 142,
+      "p50_ms": 552.6,
+      "p95_ms": 588.6,
+      "mean_ms": 553.1
+    },
+    "same_answer_as_sequential": "142/142"
+  }
+}

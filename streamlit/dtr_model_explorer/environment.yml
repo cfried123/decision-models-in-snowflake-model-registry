@@ -1,0 +1,6 @@
+name: dtr_model_explorer
+channels:
+  - snowflake
+dependencies:
+  - pandas
+  - snowflake-snowpark-python

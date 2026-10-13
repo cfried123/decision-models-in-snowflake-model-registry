@@ -1,0 +1,180 @@
+{
+  "metrics": {
+    "all": {
+      "n": 142,
+      "strict_accuracy": 0.29577464788732394,
+      "forced_accuracy": 0.5419847328244275,
+      "coverage": 0.35877862595419846,
+      "selective_accuracy": 0.7659574468085106,
+      "abstain_recall": 0.5454545454545454,
+      "ece": 0.1056137404580153,
+      "mean_latency_ms": 513.257738514084
+    },
+    "choice": {
+      "n": 43,
+      "strict_accuracy": 0.46511627906976744,
+      "forced_accuracy": 0.6046511627906976,
+      "coverage": 0.5813953488372093,
+      "selective_accuracy": 0.8,
+      "abstain_recall": null,
+      "ece": 0.06293720930232556,
+      "mean_latency_ms": 508.26110488372274
+    },
+    "dtr_booking_policy": {
+      "n": 12,
+      "strict_accuracy": 0.0,
+      "forced_accuracy": 0.5454545454545454,
+      "coverage": 0.0,
+      "selective_accuracy": null,
+      "abstain_recall": 0.0,
+      "ece": 0.18254545454545448,
+      "mean_latency_ms": 254.19671641667682
+    },
+    "dtr_class_of_service": {
+      "n": 15,
+      "strict_accuracy": 0.13333333333333333,
+      "forced_accuracy": 0.4,
+      "coverage": 0.2,
+      "selective_accuracy": 0.6666666666666666,
+      "abstain_recall": null,
+      "ece": 0.22947333333333333,
+      "mean_latency_ms": 638.1621197333212
+    },
+    "dtr_compliance_risk": {
+      "n": 15,
+      "strict_accuracy": 0.06666666666666667,
+      "forced_accuracy": 0.4,
+      "coverage": 0.06666666666666667,
+      "selective_accuracy": 1.0,
+      "abstain_recall": null,
+      "ece": 0.20656666666666665,
+      "mean_latency_ms": 560.5040789333392
+    },
+    "dtr_contractor_airlift": {
+      "n": 8,
+      "strict_accuracy": 0.375,
+      "forced_accuracy": 0.42857142857142855,
+      "coverage": 0.7142857142857143,
+      "selective_accuracy": 0.6,
+      "abstain_recall": 0.0,
+      "ece": 0.3305142857142857,
+      "mean_latency_ms": 326.42482449998056
+    },
+    "dtr_cpp_exception": {
+      "n": 14,
+      "strict_accuracy": 0.14285714285714285,
+      "forced_accuracy": 0.3333333333333333,
+      "coverage": 0.0,
+      "selective_accuracy": null,
+      "abstain_recall": 1.0,
+      "ece": 0.38825,
+      "mean_latency_ms": 761.2839062142679
+    },
+    "dtr_fare_eligibility": {
+      "n": 14,
+      "strict_accuracy": 0.21428571428571427,
+      "forced_accuracy": 0.6363636363636364,
+      "coverage": 0.18181818181818182,
+      "selective_accuracy": 0.5,
+      "abstain_recall": 0.6666666666666666,
+      "ece": 0.33778181818181824,
+      "mean_latency_ms": 728.0071446428452
+    },
+    "dtr_foreign_carrier": {
+      "n": 14,
+      "strict_accuracy": 0.14285714285714285,
+      "forced_accuracy": 0.5833333333333334,
+      "coverage": 0.08333333333333333,
+      "selective_accuracy": 1.0,
+      "abstain_recall": 0.5,
+      "ece": 0.19285833333333333,
+      "mean_latency_ms": 556.4304821428599
+    },
+    "dtr_provision_routing": {
+      "n": 16,
+      "strict_accuracy": 0.875,
+      "forced_accuracy": 1.0,
+      "coverage": 0.875,
+      "selective_accuracy": 1.0,
+      "abstain_recall": null,
+      "ece": 0.17121875000000003,
+      "mean_latency_ms": 385.13016925002574
+    },
+    "dtr_rental_use": {
+      "n": 12,
+      "strict_accuracy": 0.6666666666666666,
+      "forced_accuracy": 0.7272727272727273,
+      "coverage": 1.0,
+      "selective_accuracy": 0.7272727272727273,
+      "abstain_recall": 0.0,
+      "ece": 0.13189090909090917,
+      "mean_latency_ms": 304.690235999999
+    },
+    "dtr_ship_travel": {
+      "n": 10,
+      "strict_accuracy": 0.3,
+      "forced_accuracy": 0.4444444444444444,
+      "coverage": 0.2222222222222222,
+      "selective_accuracy": 1.0,
+      "abstain_recall": 1.0,
+      "ece": 0.30129999999999996,
+      "mean_latency_ms": 466.1666688000196
+    },
+    "dtr_travel_mode": {
+      "n": 12,
+      "strict_accuracy": 0.3333333333333333,
+      "forced_accuracy": 0.3333333333333333,
+      "coverage": 0.6666666666666666,
+      "selective_accuracy": 0.5,
+      "abstain_recall": null,
+      "ece": 0.2796083333333333,
+      "mean_latency_ms": 510.0594171666539
+    },
+    "holdout": {
+      "n": 22,
+      "strict_accuracy": 0.5,
+      "forced_accuracy": 0.6,
+      "coverage": 0.65,
+      "selective_accuracy": 0.7692307692307693,
+      "abstain_recall": 0.5,
+      "ece": 0.20812500000000003,
+      "mean_latency_ms": 378.0886145454629
+    },
+    "in_domain": {
+      "n": 120,
+      "strict_accuracy": 0.25833333333333336,
+      "forced_accuracy": 0.5315315315315315,
+      "coverage": 0.3063063063063063,
+      "selective_accuracy": 0.7647058823529411,
+      "abstain_recall": 0.5555555555555556,
+      "ece": 0.11155405405405407,
+      "mean_latency_ms": 538.038744574998
+    },
+    "noul": {
+      "n": 84,
+      "strict_accuracy": 0.25,
+      "forced_accuracy": 0.5342465753424658,
+      "coverage": 0.2876712328767123,
+      "selective_accuracy": 0.7142857142857143,
+      "abstain_recall": 0.5454545454545454,
+      "ece": 0.15295616438356166,
+      "mean_latency_ms": 507.3786925595211
+    },
+    "score": {
+      "n": 15,
+      "strict_accuracy": 0.06666666666666667,
+      "forced_accuracy": 0.4,
+      "coverage": 0.06666666666666667,
+      "selective_accuracy": 1.0,
+      "abstain_recall": null,
+      "ece": 0.20656666666666665,
+      "mean_latency_ms": 560.5040789333392
+    }
+  },
+  "service": "LAYA_DTR_BASE_SVC",
+  "n": 142,
+  "wall_s": 73.88230347099943,
+  "decisions_per_s": 1.9219758092103665,
+  "model_ms_p50": 519.321960999946,
+  "model_ms_mean": 513.257738514084
+}

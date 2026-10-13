@@ -5,3 +5,4 @@ import os
 DATABASE = os.environ.get("DECIDER_BENCH_DATABASE", "DECIDER_BENCH")
 SCHEMA = os.environ.get("DECIDER_BENCH_SCHEMA", "BENCH")
 FQ_SCHEMA = f"{DATABASE}.{SCHEMA}"
+MODEL_NAME = os.environ.get("DTR_MODEL_NAME", "DTR_DECIDER")
