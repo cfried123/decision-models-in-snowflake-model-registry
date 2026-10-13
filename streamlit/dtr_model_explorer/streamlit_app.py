@@ -7,6 +7,7 @@ their SPCS service functions (<service>!SYSTEM_ONE) and the LLM through AI_COMPL
 
 Uncertain answers are never issued: they go to DTR_REVIEW_QUEUE for a human adjudicator.
 """
+import hashlib
 import json
 import re
 import time
@@ -128,8 +129,12 @@ def render(col, label: str, res: dict, usd_per_hour, task, scenario, citation, k
         d, top, conf = decide(res["answer"])
         if d == "abstain":
             st.warning(f"Abstained → human review (top: `{top}`, {conf:.0%})")
-            if st.button("Send to review queue", key=f"q-{key}"):
+            done = f"queued-{key}"
+            if st.session_state.get(done):
+                st.success("Queued in DTR_REVIEW_QUEUE")
+            elif st.button("Send to review queue", key=f"q-{key}"):
                 queue_for_review(task, label, scenario, citation, top, conf)
+                st.session_state[done] = True
                 st.success("Queued in DTR_REVIEW_QUEUE")
         else:
             st.success(f"`{d}` · confidence {conf:.1%}")
@@ -179,18 +184,28 @@ def question_picker(prefix: str):
 
 def run(selected: list, llm: str | None, prefix: str):
     task, state, q = question_picker(prefix)
+    sig = hashlib.sha1(json.dumps([selected, llm, state, q], sort_keys=True).encode()).hexdigest()[:12]
     if st.button("Decide", type="primary", key=f"{prefix}-go", disabled=not state["scenario"]):
-        cols = st.columns(len(selected) + (1 if llm else 0) or 1)
-        for i, lab in enumerate(selected):
+        results = []
+        for lab in selected:
             ep = labels[lab]
             if ep["STATUS"] != "RUNNING":
-                cols[i].info(f"{lab}: service {ep['SERVICE_NAME']} is {ep['STATUS']}. Resume it on the Registry tab.")
-                continue
-            render(cols[i], lab, ask_model(ep["SERVICE_NAME"], state, q), ep["USD_PER_HOUR"], task,
-                   state["scenario"], state["dtr_citation"], f"{prefix}{i}")
+                results.append((lab, {"offline": f"{lab}: service {ep['SERVICE_NAME']} is {ep['STATUS']}. "
+                                                 "Resume it on the Registry tab."}, None))
+            else:
+                results.append((lab, ask_model(ep["SERVICE_NAME"], state, q), ep["USD_PER_HOUR"]))
         if llm:
-            render(cols[-1], f"{llm} (AI_COMPLETE)", ask_llm(llm, state, q), None, task, state["scenario"],
-                   state["dtr_citation"], f"{prefix}llm")
+            results.append((f"{llm} (AI_COMPLETE)", ask_llm(llm, state, q), None))
+        st.session_state[f"{prefix}-res"] = {"sig": sig, "run": time.time_ns(), "results": results}
+    saved = st.session_state.get(f"{prefix}-res")
+    if not saved or saved["sig"] != sig:  # inputs changed since the last Decide
+        return
+    cols = st.columns(len(saved["results"]) or 1)
+    for i, (lab, res, usd) in enumerate(saved["results"]):
+        if "offline" in res:
+            cols[i].info(res["offline"])
+            continue
+        render(cols[i], lab, res, usd, task, state["scenario"], state["dtr_citation"], f"{prefix}{i}-{saved['run']}")
 
 
 with ask_tab:
