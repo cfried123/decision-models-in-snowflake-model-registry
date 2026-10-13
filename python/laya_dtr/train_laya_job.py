@@ -4,7 +4,7 @@ Stages the laya package, the base checkpoint, the converted DTR rows and DTR-Ben
 python/jobs/train_laya_entry.py. Packages come from Snowflake's managed PyPI repository, so no
 external access integration is needed (trial accounts cannot create one).
 
-    SNOWFLAKE_CONNECTION_NAME=<connection> python python/laya/train_laya_job.py [run_id] ['{"epochs": 2}']
+    SNOWFLAKE_CONNECTION_NAME=<connection> python python/laya_dtr/train_laya_job.py [run_id] ['{"epochs": 2}']
 """
 import os
 import shutil

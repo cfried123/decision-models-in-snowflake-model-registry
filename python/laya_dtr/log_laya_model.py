@@ -1,11 +1,11 @@
 """Log a Laya checkpoint to the Model Registry as <database>.<schema>.LAYA_DTR.
 
 Versions: BASE (convaiinnovations/laya, zero-shot) and FT (fine-tuned on DTR Part I by
-python/laya/train_laya_job.py). The checkpoint is the only artifact and the laya package ships
+python/laya_dtr/train_laya_job.py). The checkpoint is the only artifact and the laya package ships
 as a code path, so the service never downloads weights or code.
 
-    SNOWFLAKE_CONNECTION_NAME=<connection> python python/laya/log_laya_model.py BASE <checkpoint dir>
-    SNOWFLAKE_CONNECTION_NAME=<connection> python python/laya/log_laya_model.py FT <checkpoint dir>
+    SNOWFLAKE_CONNECTION_NAME=<connection> python python/laya_dtr/log_laya_model.py BASE <checkpoint dir>
+    SNOWFLAKE_CONNECTION_NAME=<connection> python python/laya_dtr/log_laya_model.py FT <checkpoint dir>
 """
 import json
 import os

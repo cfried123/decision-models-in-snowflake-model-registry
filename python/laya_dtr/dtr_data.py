@@ -5,7 +5,7 @@ whose two weight-0.5 opposite-label copies become one 50/50 target). DTR-Bench i
 already in the Jev request shape that Laya reads, so they are passed through unchanged and
 all four models (strands-decider v21/FT, Laya base/FT) are scored on the same 142 items.
 
-    python python/laya/dtr_data.py [--out runs/laya_data]
+    python python/laya_dtr/dtr_data.py [--out runs/laya_data]
 """
 import argparse
 import json

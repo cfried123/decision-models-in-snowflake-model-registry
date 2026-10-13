@@ -4,7 +4,7 @@
 metrics; Laya's answer dicts have the same `type`/`noul`/`probabilities` shape, so it applies
 unchanged and the four models' numbers are comparable.
 
-    python python/laya/dtr_eval_laya.py <checkpoint or hub id> [--out results.json]
+    python python/laya_dtr/dtr_eval_laya.py <checkpoint or hub id> [--out results.json]
 """
 import argparse
 import json

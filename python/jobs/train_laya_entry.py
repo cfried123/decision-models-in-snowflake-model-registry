@@ -1,6 +1,6 @@
 """ML Job entrypoint: fine-tune Laya on DTR Part I, score base and fine-tuned on DTR-Bench.
 
-Runs from the payload staged by python/laya/train_laya_job.py: the laya package (from the
+Runs from the payload staged by python/laya_dtr/train_laya_job.py: the laya package (from the
 cfried123/laya fork), the base checkpoint (no internet egress in the job), the converted DTR
 rows and DTR-Bench. Writes the fine-tuned checkpoint (safetensors, no pickles) and results to
 @DECIDER_BENCH_STAGE/train/out/<run_id>/.
