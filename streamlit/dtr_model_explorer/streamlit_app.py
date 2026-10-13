@@ -140,7 +140,9 @@ def render(col, label: str, res: dict, usd_per_hour, task, scenario, citation, k
             st.success(f"`{d}` · confidence {conf:.1%}")
         a = res["answer"]
         probs = ({"false": 1 - a["noul"], "true": a["noul"]} if a["type"] == "noul" else a["probabilities"])
-        st.bar_chart(pd.Series(probs, name="p"), height=160)
+        for name, pr in sorted(probs.items(), key=lambda kv: -kv[1]):
+            st.caption(f"`{name}` {pr:.1%}")
+            st.progress(min(max(float(pr), 0.0), 1.0))
         ms = res.get("model_ms")
         line = f"Cites {citation} · round trip {res['client_ms']:.0f} ms"
         if ms is not None:
