@@ -29,7 +29,7 @@ LAYA_PKG = Path(os.environ.get("LAYA_REPO", ROOT.parent / "laya")) / "laya"
 PIP_REPOSITORY = os.environ.get("DTR_PIP_REPOSITORY", "snowflake.snowpark.pypi_shared_repository")
 PIP_REQUIREMENTS = [
     "torch>=2.10.0,<2.11", "transformers==5.19.0", "safetensors==0.8.0", "tokenizers==0.23.2",
-    "huggingface-hub==1.33.0", "numpy==1.26.4",
+    "huggingface-hub==1.33.0", "numpy==2.2.6",
 ]
 
 

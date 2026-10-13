@@ -69,8 +69,15 @@ suspend on their own. You don't need a separate ML platform account.
 * Measured on strands-decider: 68 ms per decision on the GPU, 7.3 decisions/s one at a time, 14.2/s with 8
   clients. At list price ($2/credit, 0.57 credits/h for GPU_NV_S) that is about $0.02–0.04 per 1K decisions of
   GPU time. The SQL warehouse adds about $0.04 per 1K.
-* Laya on CPU (this VM, 8 threads): about 240 ms per decision. It is about 5× smaller, so a CPU pool is
-  plausible for low volume. Compare the GPU service numbers before choosing.
+* Laya BASE and FT run as SPCS services on a **CPU** pool (`LAYA_CPU_POOL`, `CPU_X64_M`), registered from the
+  same `LAYA_DTR` model with a `numpy==2.2.6` pin (the CPU inference image's pyarrow needs NumPy 2).
+  Measured through `LAYA_DTR_*_SVC!SYSTEM_ONE` over all 142 DTR-Bench rows: about 510–610 ms of model time
+  per decision, about 1.6–1.9 decisions/s for one set-based SQL query. The same checkpoints score
+  about 28 ms per decision on the GPU_NV_S training job. Scores through the CPU service match the GPU job
+  (FT 94.4% vs 93.7% strict, differences are floating-point at the abstention boundary).
+* Tradeoff: the CPU pool is cheaper per hour but roughly 20× slower per decision, so the GPU pool
+  costs less per 1K decisions at any sustained volume. CPU is the right choice only for an
+  always-on, low-traffic demo endpoint.
 * Known gap: the registry's `run_batch` image conflicts with the transformers version the models need,
   so bulk scoring goes through the service from SQL.
 
