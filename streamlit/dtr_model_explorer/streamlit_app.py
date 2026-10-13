@@ -209,7 +209,7 @@ with board_tab:
         board = session.sql(f"SELECT * FROM {SCHEMA}.DTR_MODEL_SCORES ORDER BY SPLIT, STRICT_ACCURACY DESC").to_pandas()
         split = st.radio("Split", sorted(board["SPLIT"].unique()), horizontal=True)
         view = board[board["SPLIT"] == split]
-        st.dataframe(view, hide_index=True, use_container_width=True)
+        st.dataframe(view, use_container_width=True)
         st.bar_chart(view.set_index("LABEL")[["STRICT_ACCURACY", "SELECTIVE_ACCURACY", "COVERAGE"]])
     except Exception as e:
         st.info(f"No scores loaded yet ({str(e)[:120]}).")
@@ -217,7 +217,7 @@ with board_tab:
 with review_tab:
     q = session.sql(f"SELECT REVIEW_ID, CREATED_AT, TASK, SIDE, SCENARIO, DTR_CITATION, MODEL_TOP, MODEL_CONFIDENCE "
                     f"FROM {SCHEMA}.DTR_REVIEW_QUEUE WHERE RESOLUTION IS NULL ORDER BY CREATED_AT DESC LIMIT 50").to_pandas()
-    st.dataframe(q, hide_index=True, use_container_width=True)
+    st.dataframe(q, use_container_width=True)
     if len(q):
         rid = st.selectbox("Resolve item", q["REVIEW_ID"].tolist())
         res = st.text_input("Determination", max_chars=64)
@@ -230,10 +230,10 @@ with review_tab:
 
 with reg_tab:
     st.dataframe(eps[["LABEL", "MODEL_NAME", "VERSION_NAME", "SERVICE_NAME", "COMPUTE_POOL", "STATUS", "USD_PER_HOUR"]],
-                 hide_index=True, use_container_width=True)
+                 use_container_width=True)
     for m in eps["MODEL_NAME"].unique():
         st.markdown(f"**{m}** versions in the Model Registry")
-        st.dataframe(versions(m), hide_index=True, use_container_width=True)
+        st.dataframe(versions(m), use_container_width=True)
     svc = st.selectbox("Service", eps["SERVICE_NAME"].unique().tolist())
     c1, c2 = st.columns(2)
     if c1.button("Resume (starts billing)"):
