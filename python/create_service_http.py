@@ -27,11 +27,11 @@ from snowpark_session import create_snowpark_session  # noqa: E402
 BUILD_EAI = os.environ.get("DECIDER_BUILD_EAI")
 
 
-def main(version, name, pool, instances):
+def main(version, name, pool, instances, model=MODEL_NAME, gpus=1):
     session = create_snowpark_session()
     session.use_schema(FQ_SCHEMA)
     reg = Registry(session=session, database_name=DATABASE, schema_name=SCHEMA)
-    mv = reg.get_model(MODEL_NAME).version(version)
+    mv = reg.get_model(model).version(version)
     t0 = time.time()
     print(f"creating {name} from version {version}, {instances} instance(s) on {pool} ...", flush=True)
     mv.create_service(
@@ -45,7 +45,7 @@ def main(version, name, pool, instances):
         ingress_enabled=True,         # public HTTPS endpoint; requires BIND SERVICE ENDPOINT
         min_instances=instances,
         max_instances=instances,
-        gpu_requests="1",
+        gpu_requests=str(gpus) if gpus else None,  # 0 on a CPU pool
         num_workers=1,
         max_batch_rows=32,
     )
@@ -59,5 +59,7 @@ if __name__ == "__main__":
     p.add_argument("--name", default="DTR_DECIDER_HTTP")
     p.add_argument("--pool", default="DECIDER_BENCH_GPU_POOL")
     p.add_argument("--instances", type=int, default=1)
+    p.add_argument("--model", default=MODEL_NAME)
+    p.add_argument("--gpus", type=int, default=1)
     a = p.parse_args()
-    main(a.version, a.name, a.pool, a.instances)
+    main(a.version, a.name, a.pool, a.instances, a.model, a.gpus)
